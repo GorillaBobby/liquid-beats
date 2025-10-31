@@ -43,6 +43,7 @@ export default function Admin() {
     }
     
     loadArtists();
+    loadTracks();
   }, [user, isAdmin, adminLoading]);
 
   const loadArtists = async () => {
@@ -60,6 +61,20 @@ export default function Admin() {
       toast({ variant: "destructive", title: "Erreur", description: error.message });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadTracks = async () => {
+    try {
+      const { data: tracksData, error } = await supabase
+        .from("tracks")
+        .select("*, profiles!inner(username, display_name, avatar_url)")
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      setAllTracks(tracksData || []);
+    } catch (error: any) {
+      toast({ variant: "destructive", title: "Erreur", description: error.message });
     }
   };
 

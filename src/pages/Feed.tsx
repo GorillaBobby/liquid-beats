@@ -2,9 +2,9 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Sidebar } from "@/components/Layout/Sidebar";
-import { AudioPlayer } from "@/components/Player/AudioPlayer";
 import { TrackCard } from "@/components/Cards/TrackCard";
 import { useAuth } from "@/hooks/useAuth";
+import { useAudioPlayer } from "@/contexts/AudioPlayerContext";
 import { useToast } from "@/hooks/use-toast";
 
 interface Track {
@@ -21,10 +21,9 @@ export default function Feed() {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { setPlaylist } = useAudioPlayer();
   const [tracks, setTracks] = useState<Track[]>([]);
   const [followingIds, setFollowingIds] = useState<string[]>([]);
-  const [currentTrack, setCurrentTrack] = useState<Track | null>(null);
-  const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -71,9 +70,6 @@ export default function Feed() {
             lyrics: t.lyrics,
           }));
           setTracks(formattedTracks);
-          if (formattedTracks.length > 0 && !currentTrack) {
-            setCurrentTrack(formattedTracks[0]);
-          }
         }
         setLoading(false);
         return;
@@ -97,9 +93,6 @@ export default function Feed() {
           lyrics: t.lyrics,
         }));
         setTracks(formattedTracks);
-        if (formattedTracks.length > 0 && !currentTrack) {
-          setCurrentTrack(formattedTracks[0]);
-        }
       }
     } catch (error: any) {
       toast({ variant: "destructive", title: "Erreur", description: error.message });
@@ -108,31 +101,8 @@ export default function Feed() {
     }
   };
 
-  const handleNext = () => {
-    if (tracks.length === 0) return;
-    const nextIndex = (currentIndex + 1) % tracks.length;
-    setCurrentIndex(nextIndex);
-    setCurrentTrack(tracks[nextIndex]);
-  };
-
-  const handlePrevious = () => {
-    if (tracks.length === 0) return;
-    const prevIndex = currentIndex === 0 ? tracks.length - 1 : currentIndex - 1;
-    setCurrentIndex(prevIndex);
-    setCurrentTrack(tracks[prevIndex]);
-  };
-
   const handleTrackSelect = (index: number) => {
-    setCurrentIndex(index);
-    setCurrentTrack(tracks[index]);
-    
-    // Auto-play on selection
-    setTimeout(() => {
-      const audioEl = document.querySelector("audio");
-      if (audioEl) {
-        audioEl.play();
-      }
-    }, 100);
+    setPlaylist(tracks, index);
   };
 
   if (authLoading || loading) {
@@ -179,14 +149,6 @@ export default function Feed() {
           )}
         </section>
       </main>
-
-      {currentTrack && (
-        <AudioPlayer
-          currentTrack={currentTrack}
-          onNext={handleNext}
-          onPrevious={handlePrevious}
-        />
-      )}
     </div>
   );
 }

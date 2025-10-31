@@ -1,14 +1,15 @@
-import { Home, Library, Search, User, Heart, TrendingUp } from "lucide-react";
+import { Home, TrendingUp, Radio, ListMusic, User, Search, Inbox, Shield } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
-import { Shield } from "lucide-react";
 
 const navigation = [
   { name: "Découvrir", href: "/", icon: Home },
   { name: "Tendances", href: "/trending", icon: TrendingUp },
-  { name: "Mon fil", href: "/feed", icon: Library },
-  { name: "Playlists", href: "/playlists", icon: Heart },
+  { name: "Mon fil", href: "/feed", icon: Radio },
+  { name: "Rechercher", href: "/search", icon: Search },
+  { name: "Playlists", href: "/playlists", icon: ListMusic },
+  { name: "Messages", href: "/messages-inbox", icon: Inbox },
   { name: "Profil", href: "/profile", icon: User },
 ];
 
@@ -17,7 +18,7 @@ export const Sidebar = () => {
   const { isAdmin } = useIsAdmin();
 
   return (
-    <aside className="fixed left-0 top-0 h-screen w-64 p-6 bg-glass/50 backdrop-blur-glass border-r border-glass-border">
+    <aside className="fixed left-0 top-0 h-screen w-64 p-6 bg-glass/50 backdrop-blur-glass border-r border-glass-border z-40">
       <div className="mb-8">
         <h1 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
           LiquidBeats

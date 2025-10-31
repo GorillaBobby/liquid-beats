@@ -2,10 +2,10 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Sidebar } from "@/components/Layout/Sidebar";
-import { AudioPlayer } from "@/components/Player/AudioPlayer";
 import { TrackCard } from "@/components/Cards/TrackCard";
 import { ArtistCard } from "@/components/Cards/ArtistCard";
 import { useAuth } from "@/hooks/useAuth";
+import { useAudioPlayer } from "@/contexts/AudioPlayerContext";
 
 interface Track {
   id: string;
@@ -28,10 +28,9 @@ interface Artist {
 const Index = () => {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+  const { setPlaylist } = useAudioPlayer();
   const [tracks, setTracks] = useState<Track[]>([]);
   const [artists, setArtists] = useState<Artist[]>([]);
-  const [currentTrack, setCurrentTrack] = useState<Track | null>(null);
-  const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -61,9 +60,6 @@ const Index = () => {
         lyrics: t.lyrics,
       }));
       setTracks(formattedTracks);
-      if (formattedTracks.length > 0 && !currentTrack) {
-        setCurrentTrack(formattedTracks[0]);
-      }
     }
 
     // Load artists
@@ -88,6 +84,7 @@ const Index = () => {
             image: a.avatar_url || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400&h=400&fit=crop",
             followers: count ? `${count}` : "0",
             username: a.username,
+            verified: a.verified || false,
           };
         })
       );
@@ -95,31 +92,8 @@ const Index = () => {
     }
   };
 
-  const handleNext = () => {
-    if (tracks.length === 0) return;
-    const nextIndex = (currentIndex + 1) % tracks.length;
-    setCurrentIndex(nextIndex);
-    setCurrentTrack(tracks[nextIndex]);
-  };
-
-  const handlePrevious = () => {
-    if (tracks.length === 0) return;
-    const prevIndex = currentIndex === 0 ? tracks.length - 1 : currentIndex - 1;
-    setCurrentIndex(prevIndex);
-    setCurrentTrack(tracks[prevIndex]);
-  };
-
   const handleTrackSelect = (index: number) => {
-    setCurrentIndex(index);
-    setCurrentTrack(tracks[index]);
-    
-    // Auto-play on selection
-    setTimeout(() => {
-      const audioEl = document.querySelector("audio");
-      if (audioEl) {
-        audioEl.play();
-      }
-    }, 100);
+    setPlaylist(tracks, index);
   };
 
   if (authLoading) {
@@ -197,14 +171,6 @@ const Index = () => {
           )}
         </section>
       </main>
-
-      {currentTrack && (
-        <AudioPlayer
-          currentTrack={currentTrack}
-          onNext={handleNext}
-          onPrevious={handlePrevious}
-        />
-      )}
     </div>
   );
 };
