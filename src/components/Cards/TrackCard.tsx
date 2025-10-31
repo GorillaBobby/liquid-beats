@@ -1,8 +1,10 @@
-import { Play, Plus } from "lucide-react";
+import { Play, Plus, Download, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { AddToPlaylistDialog } from "@/components/Track/AddToPlaylistDialog";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
 
 interface TrackCardProps {
   id?: string;
@@ -13,10 +15,15 @@ interface TrackCardProps {
   onClick: () => void;
   onPlay?: () => void;
   lyrics?: string;
+  downloadable?: boolean;
+  artistId?: string;
+  onDelete?: () => void;
 }
 
-export const TrackCard = ({ id, title, artist, cover, audioUrl, onClick, onPlay, lyrics }: TrackCardProps) => {
+export const TrackCard = ({ id, title, artist, cover, audioUrl, onClick, onPlay, lyrics, downloadable, artistId, onDelete }: TrackCardProps) => {
   const [playlistDialogOpen, setPlaylistDialogOpen] = useState(false);
+  const { user } = useAuth();
+  const { toast } = useToast();
 
   const handlePlayClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -29,6 +36,58 @@ export const TrackCard = ({ id, title, artist, cover, audioUrl, onClick, onPlay,
     // Increment play count
     if (id && audioUrl) {
       supabase.rpc("increment_track_plays", { track_id: id });
+    }
+  };
+
+  const handleDownload = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!audioUrl) return;
+
+    try {
+      const response = await fetch(audioUrl);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${title}.mp3`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      
+      toast({
+        title: "Téléchargement démarré",
+        description: `${title} est en cours de téléchargement`,
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Impossible de télécharger cette musique",
+      });
+    }
+  };
+
+  const handleDelete = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!confirm("Êtes-vous sûr de vouloir supprimer cette musique ?")) return;
+
+    try {
+      const { error } = await supabase.from("tracks").delete().eq("id", id);
+      if (error) throw error;
+
+      toast({
+        title: "Musique supprimée",
+        description: "La musique a été retirée",
+      });
+
+      if (onDelete) onDelete();
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: error.message,
+      });
     }
   };
 
@@ -58,18 +117,42 @@ export const TrackCard = ({ id, title, artist, cover, audioUrl, onClick, onPlay,
         <h3 className="font-semibold text-foreground truncate mb-1">{title}</h3>
         <p className="text-sm text-muted-foreground truncate">{artist}</p>
 
-        <Button
-          onClick={(e) => {
-            e.stopPropagation();
-            setPlaylistDialogOpen(true);
-          }}
-          variant="ghost"
-          size="sm"
-          className="w-full mt-2 text-muted-foreground hover:text-foreground"
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Ajouter à une playlist
-        </Button>
+        <div className="flex gap-2 mt-2">
+          <Button
+            onClick={(e) => {
+              e.stopPropagation();
+              setPlaylistDialogOpen(true);
+            }}
+            variant="ghost"
+            size="sm"
+            className="flex-1 text-muted-foreground hover:text-foreground"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Playlist
+          </Button>
+          
+          {downloadable && (
+            <Button
+              onClick={handleDownload}
+              variant="ghost"
+              size="sm"
+              className="text-muted-foreground hover:text-foreground"
+            >
+              <Download className="w-4 h-4" />
+            </Button>
+          )}
+          
+          {user?.id === artistId && (
+            <Button
+              onClick={handleDelete}
+              variant="ghost"
+              size="sm"
+              className="text-destructive hover:text-destructive"
+            >
+              <Trash2 className="w-4 h-4" />
+            </Button>
+          )}
+        </div>
       </div>
 
       {id && (

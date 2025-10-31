@@ -15,6 +15,8 @@ interface Track {
   audioUrl: string;
   plays_count: number;
   lyrics?: string;
+  downloadable?: boolean;
+  artistId?: string;
 }
 
 export default function Trending() {
@@ -52,6 +54,8 @@ export default function Trending() {
           audioUrl: t.audio_url,
           plays_count: t.plays_count,
           lyrics: t.lyrics,
+          downloadable: t.downloadable,
+          artistId: t.artist_id,
         }));
         setTracks(formattedTracks);
       }

@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AudioPlayerProvider } from "./contexts/AudioPlayerContext";
 import GlobalAudioPlayer from "./components/Player/GlobalAudioPlayer";
+import { NotificationsPanel } from "./components/Notifications/NotificationsPanel";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
@@ -17,6 +18,8 @@ import Trending from "./pages/Trending";
 import Admin from "./pages/Admin";
 import Playlists from "./pages/Playlists";
 import PlaylistDetail from "./pages/PlaylistDetail";
+import Albums from "./pages/Albums";
+import AlbumDetail from "./pages/AlbumDetail";
 import Search from "./pages/Search";
 import NotFound from "./pages/NotFound";
 
@@ -37,6 +40,8 @@ const App = () => (
             <Route path="/search" element={<Search />} />
             <Route path="/playlists" element={<Playlists />} />
             <Route path="/playlist/:id" element={<PlaylistDetail />} />
+            <Route path="/albums" element={<Albums />} />
+            <Route path="/album/:id" element={<AlbumDetail />} />
             <Route path="/messages-inbox" element={<MessagesInbox />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="/profile" element={<Profile />} />
@@ -48,6 +53,7 @@ const App = () => (
             <Route path="*" element={<NotFound />} />
           </Routes>
           <GlobalAudioPlayer />
+          <NotificationsPanel />
         </BrowserRouter>
       </AudioPlayerProvider>
     </TooltipProvider>

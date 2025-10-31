@@ -14,6 +14,47 @@ export type Database = {
   }
   public: {
     Tables: {
+      albums: {
+        Row: {
+          artist_id: string
+          cover_url: string | null
+          created_at: string | null
+          description: string | null
+          id: string
+          release_date: string | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          artist_id: string
+          cover_url?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          release_date?: string | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          artist_id?: string
+          cover_url?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          release_date?: string | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "albums_artist_id_fkey"
+            columns: ["artist_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       follows: {
         Row: {
           created_at: string | null
@@ -122,6 +163,47 @@ export type Database = {
           {
             foreignKeyName: "messages_sender_id_fkey"
             columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notifications: {
+        Row: {
+          created_at: string | null
+          id: string
+          message: string
+          read: boolean | null
+          related_id: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          message: string
+          read?: boolean | null
+          related_id?: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          message?: string
+          read?: boolean | null
+          related_id?: string | null
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
@@ -246,11 +328,13 @@ export type Database = {
       }
       tracks: {
         Row: {
+          album_id: string | null
           artist_id: string
           audio_url: string
           cover_url: string | null
           created_at: string | null
           description: string | null
+          downloadable: boolean | null
           duration: number | null
           id: string
           lyrics: string | null
@@ -258,11 +342,13 @@ export type Database = {
           title: string
         }
         Insert: {
+          album_id?: string | null
           artist_id: string
           audio_url: string
           cover_url?: string | null
           created_at?: string | null
           description?: string | null
+          downloadable?: boolean | null
           duration?: number | null
           id?: string
           lyrics?: string | null
@@ -270,11 +356,13 @@ export type Database = {
           title: string
         }
         Update: {
+          album_id?: string | null
           artist_id?: string
           audio_url?: string
           cover_url?: string | null
           created_at?: string | null
           description?: string | null
+          downloadable?: boolean | null
           duration?: number | null
           id?: string
           lyrics?: string | null
@@ -282,6 +370,13 @@ export type Database = {
           title?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "tracks_album_id_fkey"
+            columns: ["album_id"]
+            isOneToOne: false
+            referencedRelation: "albums"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "tracks_artist_id_fkey"
             columns: ["artist_id"]

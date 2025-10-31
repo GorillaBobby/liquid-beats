@@ -14,6 +14,8 @@ interface Track {
   cover: string;
   audioUrl: string;
   lyrics?: string;
+  downloadable?: boolean;
+  artistId?: string;
 }
 
 interface Artist {
@@ -58,6 +60,8 @@ const Index = () => {
         cover: t.cover_url || "https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?w=400&h=400&fit=crop",
         audioUrl: t.audio_url,
         lyrics: t.lyrics,
+        downloadable: t.downloadable,
+        artistId: t.artist_id,
       }));
       setTracks(formattedTracks);
     }

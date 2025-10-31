@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Upload, Music } from "lucide-react";
 
 interface UploadTrackDialogProps {
@@ -24,6 +26,27 @@ export const UploadTrackDialog = ({ open, onOpenChange, onUploadSuccess }: Uploa
   const [lyrics, setLyrics] = useState("");
   const [audioFile, setAudioFile] = useState<File | null>(null);
   const [coverFile, setCoverFile] = useState<File | null>(null);
+  const [downloadable, setDownloadable] = useState(false);
+  const [albumId, setAlbumId] = useState<string>("");
+  const [albums, setAlbums] = useState<any[]>([]);
+  const [createNewAlbum, setCreateNewAlbum] = useState(false);
+  const [newAlbumTitle, setNewAlbumTitle] = useState("");
+
+  useEffect(() => {
+    if (user) {
+      loadAlbums();
+    }
+  }, [user]);
+
+  const loadAlbums = async () => {
+    if (!user) return;
+    const { data } = await supabase
+      .from("albums")
+      .select("*")
+      .eq("artist_id", user.id)
+      .order("created_at", { ascending: false });
+    if (data) setAlbums(data);
+  };
 
   const handleUpload = async () => {
     if (!user || !audioFile || !title) {
@@ -62,6 +85,23 @@ export const UploadTrackDialog = ({ open, onOpenChange, onUploadSuccess }: Uploa
         coverUrl = publicUrl;
       }
 
+      // Create album if needed
+      let finalAlbumId = albumId;
+      if (createNewAlbum && newAlbumTitle) {
+        const { data: newAlbum, error: albumError } = await supabase
+          .from("albums")
+          .insert({
+            artist_id: user.id,
+            title: newAlbumTitle,
+            cover_url: coverUrl,
+          })
+          .select()
+          .single();
+
+        if (albumError) throw albumError;
+        finalAlbumId = newAlbum.id;
+      }
+
       // Create track record
       const { error: trackError } = await supabase.from("tracks").insert({
         artist_id: user.id,
@@ -70,6 +110,8 @@ export const UploadTrackDialog = ({ open, onOpenChange, onUploadSuccess }: Uploa
         audio_url: audioUrl,
         cover_url: coverUrl,
         lyrics,
+        downloadable,
+        album_id: finalAlbumId || null,
       });
 
       if (trackError) throw trackError;
@@ -85,6 +127,10 @@ export const UploadTrackDialog = ({ open, onOpenChange, onUploadSuccess }: Uploa
       setAudioFile(null);
       setCoverFile(null);
       setLyrics("");
+      setDownloadable(false);
+      setAlbumId("");
+      setCreateNewAlbum(false);
+      setNewAlbumTitle("");
       onOpenChange(false);
       onUploadSuccess();
     } catch (error: any) {
@@ -165,6 +211,54 @@ export const UploadTrackDialog = ({ open, onOpenChange, onUploadSuccess }: Uploa
               className="bg-glass/30 border-glass-border resize-none"
               rows={6}
             />
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="downloadable"
+              checked={downloadable}
+              onCheckedChange={(checked) => setDownloadable(checked as boolean)}
+            />
+            <Label htmlFor="downloadable" className="cursor-pointer">
+              Autoriser le téléchargement
+            </Label>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Album (optionnel)</Label>
+            <div className="flex items-center space-x-2 mb-2">
+              <Checkbox
+                id="createNewAlbum"
+                checked={createNewAlbum}
+                onCheckedChange={(checked) => setCreateNewAlbum(checked as boolean)}
+              />
+              <Label htmlFor="createNewAlbum" className="cursor-pointer">
+                Créer un nouvel album
+              </Label>
+            </div>
+            
+            {createNewAlbum ? (
+              <Input
+                placeholder="Titre du nouvel album"
+                value={newAlbumTitle}
+                onChange={(e) => setNewAlbumTitle(e.target.value)}
+                className="bg-glass/30 border-glass-border"
+              />
+            ) : (
+              <Select value={albumId} onValueChange={setAlbumId}>
+                <SelectTrigger className="bg-glass/30 border-glass-border">
+                  <SelectValue placeholder="Sélectionner un album" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Aucun album (Single)</SelectItem>
+                  {albums.map((album) => (
+                    <SelectItem key={album.id} value={album.id}>
+                      {album.title}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
           </div>
 
           <Button

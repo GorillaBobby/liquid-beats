@@ -1,6 +1,9 @@
 import { Home, TrendingUp, Radio, ListMusic, User, Search, Inbox, Shield } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 const navigation = [
   { name: "Découvrir", href: "/", icon: Home },
@@ -15,6 +18,35 @@ const navigation = [
 
 export const Sidebar = () => {
   const location = useLocation();
+  const { user } = useAuth();
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    if (user) {
+      loadUnreadCount();
+      
+      const channel = supabase
+        .channel('sidebar-messages')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, () => {
+          loadUnreadCount();
+        })
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    }
+  }, [user]);
+
+  const loadUnreadCount = async () => {
+    if (!user) return;
+    const { count } = await supabase
+      .from("messages")
+      .select("*", { count: "exact", head: true })
+      .eq("recipient_id", user.id)
+      .eq("read", false);
+    setUnreadCount(count || 0);
+  };
 
   return (
     <aside className="fixed left-0 top-0 h-screen w-64 p-6 bg-glass/50 backdrop-blur-glass border-r border-glass-border z-40">
@@ -32,7 +64,7 @@ export const Sidebar = () => {
               key={item.name}
               to={item.href}
               className={cn(
-                "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300",
+                "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 relative",
                 isActive
                   ? "bg-gradient-primary text-primary-foreground shadow-glow"
                   : "text-muted-foreground hover:bg-glass-hover hover:text-foreground"
@@ -40,6 +72,11 @@ export const Sidebar = () => {
             >
               <item.icon className="w-5 h-5" />
               <span className="font-medium">{item.name}</span>
+              {item.name === "Messages" && unreadCount > 0 && (
+                <span className="absolute top-2 right-2 bg-primary text-primary-foreground rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">
+                  {unreadCount}
+                </span>
+              )}
             </Link>
           );
         })}
