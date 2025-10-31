@@ -98,6 +98,18 @@ export default function Messages() {
           (msg.sender_id === recipient.id && msg.recipient_id === user.id)
       );
       setMessages(filteredMessages);
+
+      // Mark messages as read
+      const unreadMessageIds = filteredMessages
+        .filter((msg) => msg.recipient_id === user.id && !msg.read)
+        .map((msg) => msg.id);
+
+      if (unreadMessageIds.length > 0) {
+        await supabase
+          .from("messages")
+          .update({ read: true })
+          .in("id", unreadMessageIds);
+      }
     }
   };
 

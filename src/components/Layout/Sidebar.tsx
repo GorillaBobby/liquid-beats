@@ -1,4 +1,4 @@
-import { Home, TrendingUp, Radio, ListMusic, User, Search, Inbox, Shield } from "lucide-react";
+import { Home, TrendingUp, Radio, ListMusic, User, Search, Inbox, Shield, Disc3 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
@@ -11,6 +11,7 @@ const navigation = [
   { name: "Mon fil", href: "/feed", icon: Radio },
   { name: "Rechercher", href: "/search", icon: Search },
   { name: "Playlists", href: "/playlists", icon: ListMusic },
+  { name: "Albums", href: "/albums", icon: Disc3 },
   { name: "Messages", href: "/messages-inbox", icon: Inbox },
   { name: "Profil", href: "/profile", icon: User },
   { name: "Admin", href: "/admin", icon: Shield },
@@ -20,9 +21,11 @@ export const Sidebar = () => {
   const location = useLocation();
   const { user } = useAuth();
   const [unreadCount, setUnreadCount] = useState(0);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
 
   useEffect(() => {
     if (user) {
+      setUserEmail(user.email || null);
       loadUnreadCount();
       
       const channel = supabase
@@ -48,6 +51,14 @@ export const Sidebar = () => {
     setUnreadCount(count || 0);
   };
 
+  // Filter navigation based on user email for admin access
+  const filteredNavigation = navigation.filter((item) => {
+    if (item.name === "Admin") {
+      return userEmail === "certitudemp3@gmail.com";
+    }
+    return true;
+  });
+
   return (
     <aside className="fixed left-0 top-0 h-screen w-64 p-6 bg-glass/50 backdrop-blur-glass border-r border-glass-border z-40">
       <div className="mb-8">
@@ -57,7 +68,7 @@ export const Sidebar = () => {
       </div>
       
       <nav className="space-y-2">
-        {navigation.map((item) => {
+        {filteredNavigation.map((item) => {
           const isActive = location.pathname === item.href;
           return (
             <Link

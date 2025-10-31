@@ -4,8 +4,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { Sidebar } from "@/components/Layout/Sidebar";
 import { useAuth } from "@/hooks/useAuth";
 import { useAudioPlayer } from "@/contexts/AudioPlayerContext";
-import { Play, Disc3 } from "lucide-react";
+import { Play, Disc3, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { AddToPlaylistDialog } from "@/components/Track/AddToPlaylistDialog";
 
 interface Track {
   id: string;
@@ -37,6 +38,8 @@ export default function AlbumDetail() {
   const [album, setAlbum] = useState<Album | null>(null);
   const [tracks, setTracks] = useState<Track[]>([]);
   const [loading, setLoading] = useState(true);
+  const [addToPlaylistOpen, setAddToPlaylistOpen] = useState(false);
+  const [selectedTrackId, setSelectedTrackId] = useState<string>("");
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -152,28 +155,48 @@ export default function AlbumDetail() {
             {tracks.map((track, index) => (
               <div
                 key={track.id}
-                onClick={() => {
-                  const playlist = tracks.map(t => ({
-                    id: t.id,
-                    title: t.title,
-                    artist: album.artist.display_name || album.artist.username,
-                    cover: t.cover_url || album.cover_url || "",
-                    audioUrl: t.audio_url,
-                    lyrics: t.lyrics || "",
-                  }));
-                  setPlaylist(playlist, index);
-                }}
-                className="flex items-center gap-4 p-4 rounded-xl bg-glass/30 hover:bg-glass/50 transition-all cursor-pointer group"
+                className="flex items-center gap-4 p-4 rounded-xl bg-glass/30 hover:bg-glass/50 transition-all group"
               >
                 <span className="text-muted-foreground w-8">{index + 1}</span>
-                <div className="flex-1">
+                <div
+                  className="flex-1 cursor-pointer"
+                  onClick={() => {
+                    const playlist = tracks.map(t => ({
+                      id: t.id,
+                      title: t.title,
+                      artist: album.artist.display_name || album.artist.username,
+                      cover: t.cover_url || album.cover_url || "",
+                      audioUrl: t.audio_url,
+                      lyrics: t.lyrics || "",
+                    }));
+                    setPlaylist(playlist, index);
+                  }}
+                >
                   <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors">
                     {track.title}
                   </h3>
                 </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedTrackId(track.id);
+                    setAddToPlaylistOpen(true);
+                  }}
+                  className="opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <Plus className="w-5 h-5" />
+                </Button>
               </div>
             ))}
           </div>
+
+          <AddToPlaylistDialog
+            open={addToPlaylistOpen}
+            onOpenChange={setAddToPlaylistOpen}
+            trackId={selectedTrackId}
+          />
 
           {tracks.length === 0 && (
             <div className="text-center py-24">
