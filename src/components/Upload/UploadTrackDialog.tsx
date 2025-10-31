@@ -290,11 +290,11 @@ export const UploadTrackDialog = ({ open, onOpenChange, onUploadSuccess }: Uploa
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="cover">Image de couverture (optionnel)</Label>
+                <Label htmlFor="cover">Image de couverture (PNG, JPEG, WEBP)</Label>
                 <Input
                   id="cover"
                   type="file"
-                  accept="image/*"
+                  accept="image/png,image/jpeg,image/jpg,image/webp"
                   onChange={(e) => setCoverFile(e.target.files?.[0] || null)}
                   className="bg-glass/30 border-glass-border"
                 />
@@ -357,11 +357,11 @@ export const UploadTrackDialog = ({ open, onOpenChange, onUploadSuccess }: Uploa
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="albumCover">Image de couverture de l'album</Label>
+                <Label htmlFor="albumCover">Image de couverture de l'album (PNG, JPEG, WEBP)</Label>
                 <Input
                   id="albumCover"
                   type="file"
-                  accept="image/*"
+                  accept="image/png,image/jpeg,image/jpg,image/webp"
                   onChange={(e) => setAlbumCoverFile(e.target.files?.[0] || null)}
                   className="bg-glass/30 border-glass-border"
                 />
