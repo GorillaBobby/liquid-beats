@@ -21,6 +21,7 @@ export const UploadTrackDialog = ({ open, onOpenChange, onUploadSuccess }: Uploa
   const [uploading, setUploading] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [lyrics, setLyrics] = useState("");
   const [audioFile, setAudioFile] = useState<File | null>(null);
   const [coverFile, setCoverFile] = useState<File | null>(null);
 
@@ -68,6 +69,7 @@ export const UploadTrackDialog = ({ open, onOpenChange, onUploadSuccess }: Uploa
         description,
         audio_url: audioUrl,
         cover_url: coverUrl,
+        lyrics,
       });
 
       if (trackError) throw trackError;
@@ -82,6 +84,7 @@ export const UploadTrackDialog = ({ open, onOpenChange, onUploadSuccess }: Uploa
       setDescription("");
       setAudioFile(null);
       setCoverFile(null);
+      setLyrics("");
       onOpenChange(false);
       onUploadSuccess();
     } catch (error: any) {
@@ -149,6 +152,18 @@ export const UploadTrackDialog = ({ open, onOpenChange, onUploadSuccess }: Uploa
               accept="image/*"
               onChange={(e) => setCoverFile(e.target.files?.[0] || null)}
               className="bg-glass/30 border-glass-border"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="lyrics">Paroles (optionnel)</Label>
+            <Textarea
+              id="lyrics"
+              value={lyrics}
+              onChange={(e) => setLyrics(e.target.value)}
+              placeholder="Paroles de la musique..."
+              className="bg-glass/30 border-glass-border resize-none"
+              rows={6}
             />
           </div>
 

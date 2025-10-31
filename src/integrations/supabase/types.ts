@@ -253,6 +253,7 @@ export type Database = {
           description: string | null
           duration: number | null
           id: string
+          lyrics: string | null
           plays_count: number | null
           title: string
         }
@@ -264,6 +265,7 @@ export type Database = {
           description?: string | null
           duration?: number | null
           id?: string
+          lyrics?: string | null
           plays_count?: number | null
           title: string
         }
@@ -275,6 +277,7 @@ export type Database = {
           description?: string | null
           duration?: number | null
           id?: string
+          lyrics?: string | null
           plays_count?: number | null
           title?: string
         }
@@ -314,6 +317,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      increment_track_plays: { Args: { track_id: string }; Returns: undefined }
       is_admin: { Args: { user_id: string }; Returns: boolean }
     }
     Enums: {

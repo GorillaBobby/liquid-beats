@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from "react";
-import { Play, Pause, SkipBack, SkipForward, Volume2, Heart, Repeat, Shuffle } from "lucide-react";
+import { Play, Pause, SkipBack, SkipForward, Volume2, Heart, Repeat, Shuffle, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 
 interface Track {
@@ -10,6 +11,7 @@ interface Track {
   artist: string;
   cover: string;
   audioUrl: string;
+  lyrics?: string;
 }
 
 interface AudioPlayerProps {
@@ -24,6 +26,7 @@ export const AudioPlayer = ({ currentTrack, onNext, onPrevious }: AudioPlayerPro
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(75);
   const [isLiked, setIsLiked] = useState(false);
+  const [lyricsOpen, setLyricsOpen] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
 
   useEffect(() => {
@@ -156,8 +159,18 @@ export const AudioPlayer = ({ currentTrack, onNext, onPrevious }: AudioPlayerPro
           </div>
         </div>
 
-        {/* Volume */}
+        {/* Volume & Lyrics */}
         <div className="flex items-center gap-3 w-48">
+          {currentTrack?.lyrics && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setLyricsOpen(true)}
+              className="text-muted-foreground hover:text-foreground"
+            >
+              <FileText className="w-5 h-5" />
+            </Button>
+          )}
           <Volume2 className="w-5 h-5 text-muted-foreground" />
           <Slider
             value={[volume]}
@@ -167,6 +180,20 @@ export const AudioPlayer = ({ currentTrack, onNext, onPrevious }: AudioPlayerPro
           />
         </div>
       </div>
+
+      {/* Lyrics Dialog */}
+      <Dialog open={lyricsOpen} onOpenChange={setLyricsOpen}>
+        <DialogContent className="bg-glass/95 backdrop-blur-glass border-glass-border max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold">
+              {currentTrack?.title} - {currentTrack?.artist}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="mt-4 whitespace-pre-wrap text-foreground leading-relaxed">
+            {currentTrack?.lyrics || "Paroles non disponibles"}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

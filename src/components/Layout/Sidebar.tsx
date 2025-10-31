@@ -1,4 +1,4 @@
-import { Home, Library, Search, User, Heart } from "lucide-react";
+import { Home, Library, Search, User, Heart, TrendingUp } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
@@ -6,6 +6,7 @@ import { Shield } from "lucide-react";
 
 const navigation = [
   { name: "Découvrir", href: "/", icon: Home },
+  { name: "Tendances", href: "/trending", icon: TrendingUp },
   { name: "Mon fil", href: "/feed", icon: Library },
   { name: "Playlists", href: "/playlists", icon: Heart },
   { name: "Profil", href: "/profile", icon: User },

@@ -24,7 +24,9 @@ export default function Admin() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [artists, setArtists] = useState<Artist[]>([]);
+  const [allTracks, setAllTracks] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [activeTab, setActiveTab] = useState<"artists" | "tracks">("artists");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -85,10 +87,34 @@ export default function Admin() {
     }
   };
 
+  const deleteTrack = async (trackId: string) => {
+    if (!confirm("Êtes-vous sûr de vouloir supprimer cette musique ?")) return;
+
+    try {
+      const { error } = await supabase.from("tracks").delete().eq("id", trackId);
+
+      if (error) throw error;
+
+      setAllTracks((prev) => prev.filter((t) => t.id !== trackId));
+      toast({
+        title: "Musique supprimée",
+        description: "La musique a été retirée de la plateforme",
+      });
+    } catch (error: any) {
+      toast({ variant: "destructive", title: "Erreur", description: error.message });
+    }
+  };
+
   const filteredArtists = artists.filter(
     (artist) =>
       artist.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
       artist.display_name?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const filteredTracks = allTracks.filter(
+    (track) =>
+      track.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      track.profiles.username.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   if (adminLoading || loading) {
@@ -106,20 +132,38 @@ export default function Admin() {
               <Badge className="w-8 h-8" />
               Panneau Admin
             </h1>
-            <p className="text-muted-foreground">Gérez les certifications des artistes</p>
+            <p className="text-muted-foreground">Gérez les certifications et le contenu</p>
+          </div>
+
+          <div className="flex gap-4 mb-6">
+            <Button
+              variant={activeTab === "artists" ? "default" : "outline"}
+              onClick={() => setActiveTab("artists")}
+              className={activeTab === "artists" ? "bg-gradient-primary" : "bg-glass/30 border-glass-border"}
+            >
+              Artistes
+            </Button>
+            <Button
+              variant={activeTab === "tracks" ? "default" : "outline"}
+              onClick={() => setActiveTab("tracks")}
+              className={activeTab === "tracks" ? "bg-gradient-primary" : "bg-glass/30 border-glass-border"}
+            >
+              Musiques
+            </Button>
           </div>
 
           <div className="mb-6">
             <Input
-              placeholder="Rechercher un artiste..."
+              placeholder={activeTab === "artists" ? "Rechercher un artiste..." : "Rechercher une musique..."}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="bg-glass/30 border-glass-border max-w-md"
             />
           </div>
 
-          <div className="space-y-4">
-            {filteredArtists.map((artist) => (
+          {activeTab === "artists" ? (
+            <div className="space-y-4">
+              {filteredArtists.map((artist) => (
               <div
                 key={artist.id}
                 className="bg-glass/50 backdrop-blur-glass rounded-2xl p-6 border border-glass-border flex items-center gap-4"
@@ -164,12 +208,51 @@ export default function Admin() {
                   )}
                 </Button>
               </div>
-            ))}
+              ))}
 
-            {filteredArtists.length === 0 && (
-              <p className="text-center text-muted-foreground py-12">Aucun artiste trouvé</p>
-            )}
-          </div>
+              {filteredArtists.length === 0 && (
+                <p className="text-center text-muted-foreground py-12">Aucun artiste trouvé</p>
+              )}
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {filteredTracks.map((track) => (
+                <div
+                  key={track.id}
+                  className="bg-glass/50 backdrop-blur-glass rounded-2xl p-6 border border-glass-border flex items-center gap-4"
+                >
+                  <img
+                    src={track.cover_url || "https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?w=400&h=400&fit=crop"}
+                    alt={track.title}
+                    className="w-16 h-16 rounded-lg object-cover"
+                  />
+
+                  <div className="flex-1">
+                    <h3 className="font-bold text-foreground">{track.title}</h3>
+                    <p className="text-sm text-muted-foreground">
+                      par {track.profiles.display_name || track.profiles.username}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {track.plays_count} écoutes
+                    </p>
+                  </div>
+
+                  <Button
+                    onClick={() => deleteTrack(track.id)}
+                    variant="outline"
+                    className="bg-glass/30 border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                  >
+                    <XCircle className="w-4 h-4 mr-2" />
+                    Supprimer
+                  </Button>
+                </div>
+              ))}
+
+              {filteredTracks.length === 0 && (
+                <p className="text-center text-muted-foreground py-12">Aucune musique trouvée</p>
+              )}
+            </div>
+          )}
         </div>
       </main>
     </div>

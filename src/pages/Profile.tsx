@@ -27,6 +27,7 @@ interface Track {
   artist: string;
   cover: string;
   audioUrl: string;
+  lyrics?: string;
 }
 
 export default function Profile() {
@@ -96,6 +97,7 @@ export default function Profile() {
               artist: t.profiles.display_name || t.profiles.username,
               cover: t.cover_url || "https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?w=400&h=400&fit=crop",
               audioUrl: t.audio_url,
+              lyrics: t.lyrics,
             }))
           );
         }
@@ -283,10 +285,15 @@ export default function Profile() {
                 {tracks.map((track, index) => (
                   <TrackCard
                     key={track.id}
+                    id={track.id}
                     {...track}
                     onClick={() => {
                       setCurrentIndex(index);
                       setCurrentTrack(track);
+                      setTimeout(() => {
+                        const audioEl = document.querySelector("audio");
+                        if (audioEl) audioEl.play();
+                      }, 100);
                     }}
                   />
                 ))}

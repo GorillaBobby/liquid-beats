@@ -13,6 +13,7 @@ interface Track {
   artist: string;
   cover: string;
   audioUrl: string;
+  lyrics?: string;
 }
 
 interface Artist {
@@ -57,6 +58,7 @@ const Index = () => {
         artist: t.profiles.display_name || t.profiles.username,
         cover: t.cover_url || "https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?w=400&h=400&fit=crop",
         audioUrl: t.audio_url,
+        lyrics: t.lyrics,
       }));
       setTracks(formattedTracks);
       if (formattedTracks.length > 0 && !currentTrack) {
@@ -110,6 +112,14 @@ const Index = () => {
   const handleTrackSelect = (index: number) => {
     setCurrentIndex(index);
     setCurrentTrack(tracks[index]);
+    
+    // Auto-play on selection
+    setTimeout(() => {
+      const audioEl = document.querySelector("audio");
+      if (audioEl) {
+        audioEl.play();
+      }
+    }, 100);
   };
 
   if (authLoading) {
@@ -151,6 +161,7 @@ const Index = () => {
               {tracks.map((track, index) => (
                 <TrackCard
                   key={track.id}
+                  id={track.id}
                   {...track}
                   onClick={() => handleTrackSelect(index)}
                 />

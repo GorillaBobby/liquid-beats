@@ -1,14 +1,33 @@
 import { Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
 
 interface TrackCardProps {
+  id?: string;
   title: string;
   artist: string;
   cover: string;
+  audioUrl?: string;
   onClick: () => void;
+  onPlay?: () => void;
+  lyrics?: string;
 }
 
-export const TrackCard = ({ title, artist, cover, onClick }: TrackCardProps) => {
+export const TrackCard = ({ id, title, artist, cover, audioUrl, onClick, onPlay, lyrics }: TrackCardProps) => {
+  const handlePlayClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onPlay) {
+      onPlay();
+    } else {
+      onClick();
+    }
+    
+    // Increment play count
+    if (id && audioUrl) {
+      supabase.rpc("increment_track_plays", { track_id: id });
+    }
+  };
+
   return (
     <div
       className="group relative bg-glass/50 backdrop-blur-glass rounded-2xl p-4 border border-glass-border hover:bg-glass-hover transition-all duration-300 cursor-pointer animate-fade-in"
@@ -24,6 +43,7 @@ export const TrackCard = ({ title, artist, cover, onClick }: TrackCardProps) => 
           <Button
             size="icon"
             className="w-14 h-14 bg-gradient-primary shadow-glow hover:scale-110 transition-transform"
+            onClick={handlePlayClick}
           >
             <Play className="w-6 h-6 ml-0.5" />
           </Button>

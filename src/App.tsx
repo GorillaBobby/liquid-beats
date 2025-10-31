@@ -10,6 +10,7 @@ import Messages from "./pages/Messages";
 import Followers from "./pages/Followers";
 import Following from "./pages/Following";
 import Feed from "./pages/Feed";
+import Trending from "./pages/Trending";
 import Admin from "./pages/Admin";
 import Playlists from "./pages/Playlists";
 import NotFound from "./pages/NotFound";
@@ -25,6 +26,7 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={<Auth />} />
+          <Route path="/trending" element={<Trending />} />
           <Route path="/feed" element={<Feed />} />
           <Route path="/playlists" element={<Playlists />} />
           <Route path="/admin" element={<Admin />} />

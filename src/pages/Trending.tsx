@@ -5,7 +5,7 @@ import { Sidebar } from "@/components/Layout/Sidebar";
 import { AudioPlayer } from "@/components/Player/AudioPlayer";
 import { TrackCard } from "@/components/Cards/TrackCard";
 import { useAuth } from "@/hooks/useAuth";
-import { useToast } from "@/hooks/use-toast";
+import { TrendingUp } from "lucide-react";
 
 interface Track {
   id: string;
@@ -13,16 +13,14 @@ interface Track {
   artist: string;
   cover: string;
   audioUrl: string;
-  created_at: string;
+  plays_count: number;
   lyrics?: string;
 }
 
-export default function Feed() {
+export default function Trending() {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
-  const { toast } = useToast();
   const [tracks, setTracks] = useState<Track[]>([]);
-  const [followingIds, setFollowingIds] = useState<string[]>([]);
   const [currentTrack, setCurrentTrack] = useState<Track | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -33,58 +31,18 @@ export default function Feed() {
       return;
     }
     if (user) {
-      loadFeed();
+      loadTrending();
     }
   }, [user, authLoading]);
 
-  const loadFeed = async () => {
-    if (!user) return;
-
+  const loadTrending = async () => {
     try {
       setLoading(true);
-
-      // Get users I follow
-      const { data: followsData } = await supabase
-        .from("follows")
-        .select("following_id")
-        .eq("follower_id", user.id);
-
-      const followingIds = followsData?.map((f) => f.following_id) || [];
-      setFollowingIds(followingIds);
-
-      // If no follows, show recommended tracks instead
-      if (followingIds.length === 0) {
-        const { data: tracksData } = await supabase
-          .from("tracks")
-          .select("*, profiles!inner(username, display_name, avatar_url)")
-          .order("plays_count", { ascending: false })
-          .limit(20);
-
-        if (tracksData) {
-          const formattedTracks = tracksData.map((t) => ({
-            id: t.id,
-            title: t.title,
-            artist: t.profiles.display_name || t.profiles.username,
-            cover: t.cover_url || "https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?w=400&h=400&fit=crop",
-            audioUrl: t.audio_url,
-            created_at: t.created_at,
-            lyrics: t.lyrics,
-          }));
-          setTracks(formattedTracks);
-          if (formattedTracks.length > 0 && !currentTrack) {
-            setCurrentTrack(formattedTracks[0]);
-          }
-        }
-        setLoading(false);
-        return;
-      }
-
-      // Get tracks from followed artists
       const { data: tracksData } = await supabase
         .from("tracks")
         .select("*, profiles!inner(username, display_name, avatar_url)")
-        .in("artist_id", followingIds)
-        .order("created_at", { ascending: false });
+        .order("plays_count", { ascending: false })
+        .limit(20);
 
       if (tracksData) {
         const formattedTracks = tracksData.map((t) => ({
@@ -93,7 +51,7 @@ export default function Feed() {
           artist: t.profiles.display_name || t.profiles.username,
           cover: t.cover_url || "https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?w=400&h=400&fit=crop",
           audioUrl: t.audio_url,
-          created_at: t.created_at,
+          plays_count: t.plays_count,
           lyrics: t.lyrics,
         }));
         setTracks(formattedTracks);
@@ -102,7 +60,7 @@ export default function Feed() {
         }
       }
     } catch (error: any) {
-      toast({ variant: "destructive", title: "Erreur", description: error.message });
+      console.error("Error loading trending:", error);
     } finally {
       setLoading(false);
     }
@@ -126,7 +84,11 @@ export default function Feed() {
     setCurrentIndex(index);
     setCurrentTrack(tracks[index]);
     
-    // Auto-play on selection
+    // Increment play count and auto-play
+    if (tracks[index]?.id) {
+      supabase.rpc("increment_track_plays", { track_id: tracks[index].id });
+    }
+    
     setTimeout(() => {
       const audioEl = document.querySelector("audio");
       if (audioEl) {
@@ -144,37 +106,35 @@ export default function Feed() {
       <Sidebar />
 
       <main className="ml-64 pb-32 p-8">
-          <section>
-          <h1 className="text-4xl font-bold text-foreground mb-2">Votre fil d'actualité</h1>
-          <p className="text-muted-foreground mb-8">
-            {tracks.length > 0 && followingIds.length > 0
-              ? "Nouvelles musiques des artistes que vous suivez"
-              : "Musiques recommandées pour vous"}
-          </p>
+        <section>
+          <div className="flex items-center gap-3 mb-8">
+            <TrendingUp className="w-8 h-8 text-primary" />
+            <div>
+              <h1 className="text-4xl font-bold text-foreground">Tendances</h1>
+              <p className="text-muted-foreground">Les musiques les plus écoutées</p>
+            </div>
+          </div>
 
           {tracks.length > 0 ? (
             <div className="grid grid-cols-4 gap-6">
               {tracks.map((track, index) => (
-                <TrackCard
-                  key={track.id}
-                  id={track.id}
-                  {...track}
-                  onClick={() => handleTrackSelect(index)}
-                />
+                <div key={track.id} className="relative">
+                  <div className="absolute -top-2 -left-2 z-10 w-8 h-8 bg-gradient-primary rounded-full flex items-center justify-center font-bold text-primary-foreground shadow-glow">
+                    {index + 1}
+                  </div>
+                  <TrackCard
+                    {...track}
+                    onClick={() => handleTrackSelect(index)}
+                  />
+                  <p className="text-xs text-muted-foreground mt-2 text-center">
+                    {track.plays_count} écoutes
+                  </p>
+                </div>
               ))}
             </div>
           ) : (
             <div className="text-center py-24">
-              <p className="text-muted-foreground text-lg mb-4">Votre fil est vide</p>
-              <p className="text-sm text-muted-foreground mb-6">
-                Suivez des artistes pour voir leurs nouvelles musiques ici !
-              </p>
-              <button
-                onClick={() => navigate("/")}
-                className="px-6 py-3 bg-gradient-primary rounded-xl text-primary-foreground hover:shadow-glow transition-all duration-300"
-              >
-                Découvrir des artistes
-              </button>
+              <p className="text-muted-foreground text-lg">Aucune musique dans les tendances</p>
             </div>
           )}
         </section>
