@@ -7,9 +7,12 @@ import { Button } from "@/components/ui/button";
 import { TrackCard } from "@/components/Cards/TrackCard";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { Upload, LogOut, MessageCircle, UserPlus, UserMinus, Edit, CheckCircle } from "lucide-react";
+import { Upload, LogOut, MessageCircle, UserPlus, UserMinus, Edit, CheckCircle, Trash2, Shield } from "lucide-react";
 import { UploadTrackDialog } from "@/components/Upload/UploadTrackDialog";
 import { EditProfileDialog } from "@/components/Profile/EditProfileDialog";
+import { DeleteAccountDialog } from "@/components/Profile/DeleteAccountDialog";
+import { AdminCodeDialog } from "@/components/Profile/AdminCodeDialog";
+import { useIsAdmin } from "@/hooks/useIsAdmin";
 
 interface Profile {
   id: string;
@@ -42,9 +45,12 @@ export default function Profile() {
   const [followingCount, setFollowingCount] = useState(0);
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [adminCodeDialogOpen, setAdminCodeDialogOpen] = useState(false);
   const [currentTrack, setCurrentTrack] = useState<Track | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
+  const { isAdmin } = useIsAdmin();
 
   const isOwnProfile = !username || profile?.id === user?.id;
 
@@ -238,6 +244,16 @@ export default function Profile() {
                         Ajouter une musique
                       </Button>
                     )}
+                    {!isAdmin && (
+                      <Button
+                        onClick={() => setAdminCodeDialogOpen(true)}
+                        variant="outline"
+                        className="bg-glass/30 border-glass-border"
+                      >
+                        <Shield className="w-4 h-4 mr-2" />
+                        Code Admin
+                      </Button>
+                    )}
                     <Button
                       variant="outline"
                       onClick={signOut}
@@ -245,6 +261,14 @@ export default function Profile() {
                     >
                       <LogOut className="w-4 h-4 mr-2" />
                       Déconnexion
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => setDeleteDialogOpen(true)}
+                      className="bg-glass/30 border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                    >
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      Supprimer le compte
                     </Button>
                   </>
                 ) : (
@@ -337,6 +361,23 @@ export default function Profile() {
           display_name: profile?.display_name || null,
           bio: profile?.bio || null,
           avatar_url: profile?.avatar_url || null,
+        }}
+      />
+
+      <DeleteAccountDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+      />
+
+      <AdminCodeDialog
+        open={adminCodeDialogOpen}
+        onOpenChange={setAdminCodeDialogOpen}
+        onSuccess={() => {
+          toast({
+            title: "Admin activé ✓",
+            description: "Rechargez la page pour voir le panneau admin dans le menu",
+          });
+          setTimeout(() => window.location.reload(), 1500);
         }}
       />
     </div>
