@@ -20,6 +20,7 @@ import Playlists from "./pages/Playlists";
 import PlaylistDetail from "./pages/PlaylistDetail";
 import Albums from "./pages/Albums";
 import AlbumDetail from "./pages/AlbumDetail";
+import TrackDetail from "./pages/TrackDetail";
 import Search from "./pages/Search";
 import NotFound from "./pages/NotFound";
 
@@ -42,6 +43,7 @@ const App = () => (
             <Route path="/playlist/:id" element={<PlaylistDetail />} />
             <Route path="/albums" element={<Albums />} />
             <Route path="/album/:id" element={<AlbumDetail />} />
+            <Route path="/track/:id" element={<TrackDetail />} />
             <Route path="/messages-inbox" element={<MessagesInbox />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="/profile" element={<Profile />} />

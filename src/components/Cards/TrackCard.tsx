@@ -1,10 +1,11 @@
-import { Play, Plus, Download, Trash2 } from "lucide-react";
+import { Play, Plus, Download, Trash2, Share2 } from "lucide-react";
 import { useState } from "react";
 import { AddToPlaylistDialog } from "@/components/Track/AddToPlaylistDialog";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 
 interface TrackCardProps {
   id?: string;
@@ -24,6 +25,7 @@ export const TrackCard = ({ id, title, artist, cover, audioUrl, onClick, onPlay,
   const [playlistDialogOpen, setPlaylistDialogOpen] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handlePlayClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -91,11 +93,37 @@ export const TrackCard = ({ id, title, artist, cover, audioUrl, onClick, onPlay,
     }
   };
 
+  const handleShare = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const url = `${window.location.origin}/track/${id}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      toast({
+        title: "Lien copié",
+        description: "Le lien de cette musique a été copié dans le presse-papier",
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Impossible de copier le lien",
+      });
+    }
+  };
+
+  const handleCardClick = (e: React.MouseEvent) => {
+    // If clicking on a button, don't navigate
+    if ((e.target as HTMLElement).closest('button')) {
+      return;
+    }
+    navigate(`/track/${id}`);
+  };
+
   return (
     <>
       <div
         className="group relative bg-glass/50 backdrop-blur-glass rounded-2xl p-4 border border-glass-border hover:bg-glass-hover transition-all duration-300 cursor-pointer animate-fade-in"
-        onClick={onClick}
+        onClick={handleCardClick}
       >
         <div className="relative aspect-square rounded-xl overflow-hidden mb-4 shadow-glass">
           <img
@@ -129,6 +157,15 @@ export const TrackCard = ({ id, title, artist, cover, audioUrl, onClick, onPlay,
           >
             <Plus className="w-4 h-4 mr-2" />
             Playlist
+          </Button>
+          
+          <Button
+            onClick={handleShare}
+            variant="ghost"
+            size="sm"
+            className="text-muted-foreground hover:text-foreground"
+          >
+            <Share2 className="w-4 h-4" />
           </Button>
           
           {downloadable && (
