@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Sidebar } from "@/components/Layout/Sidebar";
 import { MobileNav } from "@/components/Layout/MobileNav";
 import { TrackCard } from "@/components/Cards/TrackCard";
+import { AlbumCard } from "@/components/Cards/AlbumCard";
 import { ArtistCard } from "@/components/Cards/ArtistCard";
 import { useAuth } from "@/hooks/useAuth";
 import { useAudioPlayer } from "@/contexts/AudioPlayerContext";
@@ -18,6 +19,15 @@ interface Track {
   lyrics?: string;
   downloadable?: boolean;
   artistId?: string;
+  albumId?: string;
+}
+
+interface Album {
+  id: string;
+  title: string;
+  cover_url: string;
+  artist: string;
+  trackCount: number;
 }
 
 interface Artist {
@@ -34,9 +44,13 @@ const Index = () => {
   const navigate = useNavigate();
   const { setPlaylist } = useAudioPlayer();
   const [tracks, setTracks] = useState<Track[]>([]);
+  const [albums, setAlbums] = useState<Album[]>([]);
+  const [singleTracks, setSingleTracks] = useState<Track[]>([]);
   const [artists, setArtists] = useState<Artist[]>([]);
-  const [displayedCount, setDisplayedCount] = useState(8);
-  const [totalTracksCount, setTotalTracksCount] = useState(0);
+  const [displayedSinglesCount, setDisplayedSinglesCount] = useState(8);
+  const [totalSinglesCount, setTotalSinglesCount] = useState(0);
+  const [displayedAlbumsCount, setDisplayedAlbumsCount] = useState(6);
+  const [totalAlbumsCount, setTotalAlbumsCount] = useState(0);
   const [displayedArtistsCount, setDisplayedArtistsCount] = useState(6);
   const [totalArtistsCount, setTotalArtistsCount] = useState(0);
 
@@ -48,22 +62,58 @@ const Index = () => {
     if (user) {
       loadData();
     }
-  }, [user, authLoading, displayedCount, displayedArtistsCount]);
+  }, [user, authLoading, displayedSinglesCount, displayedAlbumsCount, displayedArtistsCount]);
 
   const loadData = async () => {
-    // Get total count
-    const { count } = await supabase
-      .from("tracks")
+    // Get total albums count
+    const { count: albumsCount } = await supabase
+      .from("albums")
       .select("*", { count: "exact", head: true });
     
-    setTotalTracksCount(count || 0);
+    setTotalAlbumsCount(albumsCount || 0);
 
-    // Load tracks
+    // Load albums
+    const { data: albumsData } = await supabase
+      .from("albums")
+      .select("*, profiles!inner(username, display_name)")
+      .order("created_at", { ascending: false })
+      .limit(displayedAlbumsCount);
+
+    if (albumsData) {
+      const albumsWithCount = await Promise.all(
+        albumsData.map(async (album) => {
+          const { count } = await supabase
+            .from("tracks")
+            .select("*", { count: "exact", head: true })
+            .eq("album_id", album.id);
+          
+          return {
+            id: album.id,
+            title: album.title,
+            cover_url: album.cover_url,
+            artist: album.profiles.display_name || album.profiles.username,
+            trackCount: count || 0,
+          };
+        })
+      );
+      setAlbums(albumsWithCount);
+    }
+
+    // Get total singles count (tracks without album)
+    const { count: singlesCount } = await supabase
+      .from("tracks")
+      .select("*", { count: "exact", head: true })
+      .is("album_id", null);
+    
+    setTotalSinglesCount(singlesCount || 0);
+
+    // Load singles (tracks without album)
     const { data: tracksData } = await supabase
       .from("tracks")
       .select("*, profiles!inner(username, display_name, avatar_url)")
+      .is("album_id", null)
       .order("created_at", { ascending: false })
-      .limit(displayedCount);
+      .limit(displayedSinglesCount);
 
     if (tracksData) {
       const formattedTracks = tracksData.map((t) => ({
@@ -75,8 +125,10 @@ const Index = () => {
         lyrics: t.lyrics,
         downloadable: t.downloadable,
         artistId: t.artist_id,
+        albumId: t.album_id,
       }));
       setTracks(formattedTracks);
+      setSingleTracks(formattedTracks);
     }
 
     // Get total artists count
@@ -153,13 +205,42 @@ const Index = () => {
           </div>
         </section>
 
-        {/* Tendances */}
+        {/* Albums récents */}
+        {albums.length > 0 && (
+          <section className="mb-8 md:mb-12">
+            <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-4 md:mb-6">Albums récents</h2>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-6 mb-6">
+              {albums.map((album) => (
+                <AlbumCard
+                  key={album.id}
+                  id={album.id}
+                  title={album.title}
+                  artist={album.artist}
+                  coverUrl={album.cover_url}
+                  trackCount={album.trackCount}
+                />
+              ))}
+            </div>
+            {displayedAlbumsCount < totalAlbumsCount && (
+              <div className="text-center">
+                <Button
+                  onClick={() => setDisplayedAlbumsCount(prev => prev + 6)}
+                  className="bg-gradient-primary hover:shadow-glow transition-all duration-300"
+                >
+                  Afficher plus
+                </Button>
+              </div>
+            )}
+          </section>
+        )}
+
+        {/* Singles récents */}
         <section className="mb-8 md:mb-12">
-          <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-4 md:mb-6">Musiques récentes</h2>
-          {tracks.length > 0 ? (
+          <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-4 md:mb-6">Singles récents</h2>
+          {singleTracks.length > 0 ? (
             <>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6 mb-6">
-                {tracks.map((track, index) => (
+                {singleTracks.map((track, index) => (
                   <TrackCard
                     key={track.id}
                     id={track.id}
@@ -168,10 +249,10 @@ const Index = () => {
                   />
                 ))}
               </div>
-              {displayedCount < totalTracksCount && (
+              {displayedSinglesCount < totalSinglesCount && (
                 <div className="text-center">
                   <Button
-                    onClick={() => setDisplayedCount(prev => prev + 8)}
+                    onClick={() => setDisplayedSinglesCount(prev => prev + 8)}
                     className="bg-gradient-primary hover:shadow-glow transition-all duration-300"
                   >
                     Afficher plus

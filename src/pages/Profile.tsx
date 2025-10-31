@@ -2,9 +2,11 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Sidebar } from "@/components/Layout/Sidebar";
+import { MobileNav } from "@/components/Layout/MobileNav";
 import { AudioPlayer } from "@/components/Player/AudioPlayer";
 import { Button } from "@/components/ui/button";
 import { TrackCard } from "@/components/Cards/TrackCard";
+import { AlbumCard } from "@/components/Cards/AlbumCard";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { Upload, LogOut, MessageCircle, UserPlus, UserMinus, Edit, CheckCircle, Trash2 } from "lucide-react";
@@ -31,6 +33,15 @@ interface Track {
   lyrics?: string;
   downloadable?: boolean;
   artistId?: string;
+  albumId?: string;
+}
+
+interface Album {
+  id: string;
+  title: string;
+  cover_url: string;
+  artist: string;
+  trackCount: number;
 }
 
 export default function Profile() {
@@ -40,6 +51,8 @@ export default function Profile() {
   const { toast } = useToast();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [tracks, setTracks] = useState<Track[]>([]);
+  const [albums, setAlbums] = useState<Album[]>([]);
+  const [singleTracks, setSingleTracks] = useState<Track[]>([]);
   const [isFollowing, setIsFollowing] = useState(false);
   const [followersCount, setFollowersCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
@@ -87,6 +100,35 @@ export default function Profile() {
 
       // Load tracks if artist
       if (profileData.user_type === "artist") {
+        // Load albums
+        const { data: albumsData } = await supabase
+          .from("albums")
+          .select("*")
+          .eq("artist_id", profileData.id)
+          .order("created_at", { ascending: false });
+
+        if (albumsData) {
+          // Count tracks for each album
+          const albumsWithCount = await Promise.all(
+            albumsData.map(async (album) => {
+              const { count } = await supabase
+                .from("tracks")
+                .select("*", { count: "exact", head: true })
+                .eq("album_id", album.id);
+              
+              return {
+                id: album.id,
+                title: album.title,
+                cover_url: album.cover_url,
+                artist: profileData.display_name || profileData.username,
+                trackCount: count || 0,
+              };
+            })
+          );
+          setAlbums(albumsWithCount);
+        }
+
+        // Load all tracks
         const { data: tracksData } = await supabase
           .from("tracks")
           .select("*, profiles!inner(username, display_name)")
@@ -94,18 +136,21 @@ export default function Profile() {
           .order("created_at", { ascending: false });
 
         if (tracksData) {
-          setTracks(
-            tracksData.map((t) => ({
-              id: t.id,
-              title: t.title,
-              artist: t.profiles.display_name || t.profiles.username,
-              cover: t.cover_url || "https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?w=400&h=400&fit=crop",
-              audioUrl: t.audio_url,
-              lyrics: t.lyrics,
-              downloadable: t.downloadable,
-              artistId: t.artist_id,
-            }))
-          );
+          const allTracks = tracksData.map((t) => ({
+            id: t.id,
+            title: t.title,
+            artist: t.profiles.display_name || t.profiles.username,
+            cover: t.cover_url || "https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?w=400&h=400&fit=crop",
+            audioUrl: t.audio_url,
+            lyrics: t.lyrics,
+            downloadable: t.downloadable,
+            artistId: t.artist_id,
+            albumId: t.album_id,
+          }));
+          
+          setTracks(allTracks);
+          // Filter singles (tracks without album)
+          setSingleTracks(allTracks.filter(t => !t.albumId));
         }
       }
 
@@ -179,9 +224,10 @@ export default function Profile() {
 
   return (
     <div className="min-h-screen bg-background">
+      <MobileNav />
       <Sidebar />
       
-      <main className="ml-64 pb-32 p-8">
+      <main className="md:ml-64 pb-32 p-4 md:p-8 pt-20 md:pt-8">
         {/* Header Profile */}
         <div className="bg-glass/50 backdrop-blur-glass rounded-3xl p-8 border border-glass-border mb-8 shadow-glass">
           <div className="flex items-start gap-6">
@@ -288,37 +334,63 @@ export default function Profile() {
           </div>
         </div>
 
-        {/* Tracks Section */}
+        {/* Albums & Singles Section */}
         {profile.user_type === "artist" && (
-          <section>
-            <h2 className="text-2xl font-bold text-foreground mb-6">
-              {isOwnProfile ? "Vos musiques" : "Musiques"}
-            </h2>
-            {tracks.length > 0 ? (
-              <div className="grid grid-cols-4 gap-6">
-                {tracks.map((track, index) => (
-                  <TrackCard
-                    key={track.id}
-                    id={track.id}
-                    {...track}
-                    onDelete={loadProfile}
-                    onClick={() => {
-                      setCurrentIndex(index);
-                      setCurrentTrack(track);
-                      setTimeout(() => {
-                        const audioEl = document.querySelector("audio");
-                        if (audioEl) audioEl.play();
-                      }, 100);
-                    }}
-                  />
-                ))}
-              </div>
-            ) : (
+          <>
+            {/* Albums */}
+            {albums.length > 0 && (
+              <section className="mb-12">
+                <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-4 md:mb-6">
+                  {isOwnProfile ? "Vos albums" : "Albums"}
+                </h2>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
+                  {albums.map((album) => (
+                    <AlbumCard
+                      key={album.id}
+                      id={album.id}
+                      title={album.title}
+                      artist={album.artist}
+                      coverUrl={album.cover_url}
+                      trackCount={album.trackCount}
+                    />
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* Singles */}
+            {singleTracks.length > 0 && (
+              <section>
+                <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-4 md:mb-6">
+                  {isOwnProfile ? "Vos singles" : "Singles"}
+                </h2>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
+                  {singleTracks.map((track, index) => (
+                    <TrackCard
+                      key={track.id}
+                      id={track.id}
+                      {...track}
+                      onDelete={loadProfile}
+                      onClick={() => {
+                        setCurrentIndex(tracks.findIndex(t => t.id === track.id));
+                        setCurrentTrack(track);
+                        setTimeout(() => {
+                          const audioEl = document.querySelector("audio");
+                          if (audioEl) audioEl.play();
+                        }, 100);
+                      }}
+                    />
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {albums.length === 0 && singleTracks.length === 0 && (
               <p className="text-muted-foreground">
                 {isOwnProfile ? "Vous n'avez pas encore ajouté de musiques" : "Aucune musique"}
               </p>
             )}
-          </section>
+          </>
         )}
       </main>
 
