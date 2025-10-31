@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { TrackCard } from "@/components/Cards/TrackCard";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { Upload, LogOut, MessageCircle, UserPlus, UserMinus, Edit } from "lucide-react";
+import { Upload, LogOut, MessageCircle, UserPlus, UserMinus, Edit, CheckCircle } from "lucide-react";
 import { UploadTrackDialog } from "@/components/Upload/UploadTrackDialog";
 import { EditProfileDialog } from "@/components/Profile/EditProfileDialog";
 
@@ -18,6 +18,7 @@ interface Profile {
   user_type: "artist" | "fan";
   bio: string | null;
   avatar_url: string | null;
+  verified: boolean;
 }
 
 interface Track {
@@ -187,6 +188,9 @@ export default function Profile() {
                 <h1 className="text-3xl font-bold text-foreground">
                   {profile.display_name || profile.username}
                 </h1>
+                {profile.verified && (
+                  <CheckCircle className="w-7 h-7 text-primary fill-primary" />
+                )}
                 <span className="px-3 py-1 rounded-full text-sm bg-gradient-primary text-primary-foreground">
                   {profile.user_type === "artist" ? "Artiste" : "Fan"}
                 </span>

@@ -5,7 +5,7 @@ import { Sidebar } from "@/components/Layout/Sidebar";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import { UserPlus, UserMinus } from "lucide-react";
+import { UserPlus, UserMinus, CheckCircle } from "lucide-react";
 
 interface User {
   id: string;
@@ -13,6 +13,7 @@ interface User {
   display_name: string | null;
   avatar_url: string | null;
   user_type: "artist" | "fan";
+  verified?: boolean;
 }
 
 export default function Followers() {
@@ -129,14 +130,19 @@ export default function Followers() {
                     onClick={() => navigate(`/profile/${follower.username}`)}
                   />
                   
-                  <div className="flex-1">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
                     <h3
                       className="font-bold text-foreground cursor-pointer hover:text-primary transition-colors"
                       onClick={() => navigate(`/profile/${follower.username}`)}
                     >
                       {follower.display_name || follower.username}
                     </h3>
-                    <p className="text-sm text-muted-foreground">@{follower.username}</p>
+                    {follower.verified && (
+                      <CheckCircle className="w-5 h-5 text-primary fill-primary" />
+                    )}
+                  </div>
+                  <p className="text-sm text-muted-foreground">@{follower.username}</p>
                     <span className="text-xs px-2 py-1 rounded-full bg-glass/50 text-muted-foreground mt-1 inline-block">
                       {follower.user_type === "artist" ? "Artiste" : "Fan"}
                     </span>

@@ -1,15 +1,19 @@
 import { Home, Library, Search, User, Heart } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { useIsAdmin } from "@/hooks/useIsAdmin";
+import { Shield } from "lucide-react";
 
 const navigation = [
   { name: "Découvrir", href: "/", icon: Home },
   { name: "Mon fil", href: "/feed", icon: Library },
+  { name: "Playlists", href: "/playlists", icon: Heart },
   { name: "Profil", href: "/profile", icon: User },
 ];
 
 export const Sidebar = () => {
   const location = useLocation();
+  const { isAdmin } = useIsAdmin();
 
   return (
     <aside className="fixed left-0 top-0 h-screen w-64 p-6 bg-glass/50 backdrop-blur-glass border-r border-glass-border">
@@ -38,6 +42,21 @@ export const Sidebar = () => {
             </Link>
           );
         })}
+        
+        {isAdmin && (
+          <Link
+            to="/admin"
+            className={cn(
+              "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300",
+              location.pathname === "/admin"
+                ? "bg-gradient-primary text-primary-foreground shadow-glow"
+                : "text-muted-foreground hover:bg-glass-hover hover:text-foreground"
+            )}
+          >
+            <Shield className="w-5 h-5" />
+            <span className="font-medium">Admin</span>
+          </Link>
+        )}
       </nav>
     </aside>
   );

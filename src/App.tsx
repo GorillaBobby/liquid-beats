@@ -10,6 +10,8 @@ import Messages from "./pages/Messages";
 import Followers from "./pages/Followers";
 import Following from "./pages/Following";
 import Feed from "./pages/Feed";
+import Admin from "./pages/Admin";
+import Playlists from "./pages/Playlists";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -24,6 +26,8 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/feed" element={<Feed />} />
+          <Route path="/playlists" element={<Playlists />} />
+          <Route path="/admin" element={<Admin />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/profile/:username" element={<Profile />} />
           <Route path="/messages/:username" element={<Messages />} />
