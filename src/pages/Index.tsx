@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Sidebar } from "@/components/Layout/Sidebar";
+import { MobileNav } from "@/components/Layout/MobileNav";
 import { TrackCard } from "@/components/Cards/TrackCard";
 import { ArtistCard } from "@/components/Cards/ArtistCard";
 import { useAuth } from "@/hooks/useAuth";
@@ -130,33 +131,34 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <MobileNav />
       <Sidebar />
       
-      <main className="ml-64 pb-32 p-8">
+      <main className="md:ml-64 pb-32 p-4 md:p-8 pt-20 md:pt-8">
         {/* Hero Section */}
-        <section className="relative h-96 rounded-3xl overflow-hidden mb-12 shadow-glass">
+        <section className="relative h-48 md:h-96 rounded-2xl md:rounded-3xl overflow-hidden mb-8 md:mb-12 shadow-glass">
           <img
             src="https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?w=1200&h=400&fit=crop"
             alt="Hero"
             className="w-full h-full object-cover"
           />
           <div className="absolute inset-0 bg-gradient-overlay" />
-          <div className="absolute bottom-8 left-8 right-8">
-            <h2 className="text-5xl font-bold text-foreground mb-4 animate-fade-in">
+          <div className="absolute bottom-4 left-4 right-4 md:bottom-8 md:left-8 md:right-8">
+            <h2 className="text-2xl md:text-5xl font-bold text-foreground mb-2 md:mb-4 animate-fade-in">
               Découvrez votre musique
             </h2>
-            <p className="text-xl text-muted-foreground animate-fade-in">
+            <p className="text-sm md:text-xl text-muted-foreground animate-fade-in">
               Les meilleurs titres sélectionnés pour vous
             </p>
           </div>
         </section>
 
         {/* Tendances */}
-        <section className="mb-12">
-          <h2 className="text-3xl font-bold text-foreground mb-6">Musiques récentes</h2>
+        <section className="mb-8 md:mb-12">
+          <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-4 md:mb-6">Musiques récentes</h2>
           {tracks.length > 0 ? (
             <>
-              <div className="grid grid-cols-4 gap-6 mb-6">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6 mb-6">
                 {tracks.map((track, index) => (
                   <TrackCard
                     key={track.id}
@@ -189,10 +191,10 @@ const Index = () => {
 
         {/* Artistes populaires */}
         <section>
-          <h2 className="text-3xl font-bold text-foreground mb-6">Artistes</h2>
+          <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-4 md:mb-6">Artistes</h2>
           {artists.length > 0 ? (
             <>
-              <div className="grid grid-cols-3 gap-6 mb-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-6 mb-6">
                 {artists.map((artist) => (
                   <ArtistCard
                     key={artist.id}
