@@ -36,6 +36,8 @@ const Index = () => {
   const [artists, setArtists] = useState<Artist[]>([]);
   const [displayedCount, setDisplayedCount] = useState(8);
   const [totalTracksCount, setTotalTracksCount] = useState(0);
+  const [displayedArtistsCount, setDisplayedArtistsCount] = useState(6);
+  const [totalArtistsCount, setTotalArtistsCount] = useState(0);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -45,7 +47,7 @@ const Index = () => {
     if (user) {
       loadData();
     }
-  }, [user, authLoading, displayedCount]);
+  }, [user, authLoading, displayedCount, displayedArtistsCount]);
 
   const loadData = async () => {
     // Get total count
@@ -76,12 +78,20 @@ const Index = () => {
       setTracks(formattedTracks);
     }
 
+    // Get total artists count
+    const { count: artistsCount } = await supabase
+      .from("profiles")
+      .select("*", { count: "exact", head: true })
+      .eq("user_type", "artist");
+    
+    setTotalArtistsCount(artistsCount || 0);
+
     // Load artists
     const { data: artistsData } = await supabase
       .from("profiles")
       .select("*")
       .eq("user_type", "artist")
-      .limit(9);
+      .limit(displayedArtistsCount);
 
     if (artistsData) {
       const formattedArtists = await Promise.all(
@@ -181,15 +191,27 @@ const Index = () => {
         <section>
           <h2 className="text-3xl font-bold text-foreground mb-6">Artistes</h2>
           {artists.length > 0 ? (
-            <div className="grid grid-cols-3 gap-6">
-              {artists.map((artist) => (
-                <ArtistCard
-                  key={artist.id}
-                  {...artist}
-                  onClick={() => navigate(`/profile/${artist.username}`)}
-                />
-              ))}
-            </div>
+            <>
+              <div className="grid grid-cols-3 gap-6 mb-6">
+                {artists.map((artist) => (
+                  <ArtistCard
+                    key={artist.id}
+                    {...artist}
+                    onClick={() => navigate(`/profile/${artist.username}`)}
+                  />
+                ))}
+              </div>
+              {displayedArtistsCount < totalArtistsCount && (
+                <div className="text-center">
+                  <Button
+                    onClick={() => setDisplayedArtistsCount(prev => prev + 6)}
+                    className="bg-gradient-primary hover:shadow-glow transition-all duration-300"
+                  >
+                    Afficher plus
+                  </Button>
+                </div>
+              )}
+            </>
           ) : (
             <div className="text-center py-12">
               <p className="text-muted-foreground">Aucun artiste inscrit pour le moment</p>
