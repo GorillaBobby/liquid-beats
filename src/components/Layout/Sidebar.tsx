@@ -60,7 +60,7 @@ export const Sidebar = () => {
   });
 
   return (
-    <aside className="hidden md:fixed md:left-0 md:top-0 md:h-screen md:w-64 md:p-6 md:bg-glass/50 md:backdrop-blur-glass md:border-r md:border-glass-border md:z-40">
+    <aside className="hidden md:block fixed left-0 top-0 h-screen w-64 p-6 bg-glass/50 backdrop-blur-glass border-r border-glass-border z-40">
       <div className="mb-8">
         <h1 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
           LiquidBeats
