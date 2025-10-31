@@ -6,6 +6,7 @@ import { TrackCard } from "@/components/Cards/TrackCard";
 import { ArtistCard } from "@/components/Cards/ArtistCard";
 import { useAuth } from "@/hooks/useAuth";
 import { useAudioPlayer } from "@/contexts/AudioPlayerContext";
+import { Button } from "@/components/ui/button";
 
 interface Track {
   id: string;
@@ -33,6 +34,8 @@ const Index = () => {
   const { setPlaylist } = useAudioPlayer();
   const [tracks, setTracks] = useState<Track[]>([]);
   const [artists, setArtists] = useState<Artist[]>([]);
+  const [displayedCount, setDisplayedCount] = useState(8);
+  const [totalTracksCount, setTotalTracksCount] = useState(0);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -42,15 +45,22 @@ const Index = () => {
     if (user) {
       loadData();
     }
-  }, [user, authLoading]);
+  }, [user, authLoading, displayedCount]);
 
   const loadData = async () => {
+    // Get total count
+    const { count } = await supabase
+      .from("tracks")
+      .select("*", { count: "exact", head: true });
+    
+    setTotalTracksCount(count || 0);
+
     // Load tracks
     const { data: tracksData } = await supabase
       .from("tracks")
       .select("*, profiles!inner(username, display_name, avatar_url)")
       .order("created_at", { ascending: false })
-      .limit(12);
+      .limit(displayedCount);
 
     if (tracksData) {
       const formattedTracks = tracksData.map((t) => ({
@@ -135,16 +145,28 @@ const Index = () => {
         <section className="mb-12">
           <h2 className="text-3xl font-bold text-foreground mb-6">Musiques récentes</h2>
           {tracks.length > 0 ? (
-            <div className="grid grid-cols-4 gap-6">
-              {tracks.map((track, index) => (
-                <TrackCard
-                  key={track.id}
-                  id={track.id}
-                  {...track}
-                  onClick={() => handleTrackSelect(index)}
-                />
-              ))}
-            </div>
+            <>
+              <div className="grid grid-cols-4 gap-6 mb-6">
+                {tracks.map((track, index) => (
+                  <TrackCard
+                    key={track.id}
+                    id={track.id}
+                    {...track}
+                    onClick={() => handleTrackSelect(index)}
+                  />
+                ))}
+              </div>
+              {displayedCount < totalTracksCount && (
+                <div className="text-center">
+                  <Button
+                    onClick={() => setDisplayedCount(prev => prev + 8)}
+                    className="bg-gradient-primary hover:shadow-glow transition-all duration-300"
+                  >
+                    Afficher plus
+                  </Button>
+                </div>
+              )}
+            </>
           ) : (
             <div className="text-center py-12">
               <p className="text-muted-foreground text-lg mb-4">Aucune musique pour le moment</p>
