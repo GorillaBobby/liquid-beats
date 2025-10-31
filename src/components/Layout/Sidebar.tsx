@@ -4,9 +4,6 @@ import { cn } from "@/lib/utils";
 
 const navigation = [
   { name: "Découvrir", href: "/", icon: Home },
-  { name: "Rechercher", href: "/search", icon: Search },
-  { name: "Bibliothèque", href: "/library", icon: Library },
-  { name: "Favoris", href: "/favorites", icon: Heart },
   { name: "Profil", href: "/profile", icon: User },
 ];
 

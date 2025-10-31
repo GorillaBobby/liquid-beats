@@ -1,76 +1,107 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import { Sidebar } from "@/components/Layout/Sidebar";
 import { AudioPlayer } from "@/components/Player/AudioPlayer";
 import { TrackCard } from "@/components/Cards/TrackCard";
 import { ArtistCard } from "@/components/Cards/ArtistCard";
+import { useAuth } from "@/hooks/useAuth";
 
-// Sample data avec URLs audio réelles
-const tracks = [
-  {
-    id: "1",
-    title: "Midnight Dreams",
-    artist: "Luna Eclipse",
-    cover: "https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?w=400&h=400&fit=crop",
-    audioUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"
-  },
-  {
-    id: "2",
-    title: "Electric Pulse",
-    artist: "Neon Waves",
-    cover: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop",
-    audioUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3"
-  },
-  {
-    id: "3",
-    title: "Ocean Breeze",
-    artist: "Coastal Dreams",
-    cover: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=400&h=400&fit=crop",
-    audioUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3"
-  },
-  {
-    id: "4",
-    title: "Urban Nights",
-    artist: "City Lights",
-    cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400&h=400&fit=crop",
-    audioUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3"
-  },
-];
+interface Track {
+  id: string;
+  title: string;
+  artist: string;
+  cover: string;
+  audioUrl: string;
+}
 
-const artists = [
-  {
-    id: "1",
-    name: "Luna Eclipse",
-    genre: "Electronic",
-    image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop",
-    followers: "1.2M"
-  },
-  {
-    id: "2",
-    name: "Neon Waves",
-    genre: "Synthwave",
-    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop",
-    followers: "856K"
-  },
-  {
-    id: "3",
-    name: "Coastal Dreams",
-    genre: "Ambient",
-    image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop",
-    followers: "642K"
-  },
-];
+interface Artist {
+  id: string;
+  name: string;
+  genre: string;
+  image: string;
+  followers: string;
+  username: string;
+}
 
 const Index = () => {
-  const [currentTrack, setCurrentTrack] = useState(tracks[0]);
+  const { user, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
+  const [tracks, setTracks] = useState<Track[]>([]);
+  const [artists, setArtists] = useState<Artist[]>([]);
+  const [currentTrack, setCurrentTrack] = useState<Track | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
 
+  useEffect(() => {
+    if (!authLoading && !user) {
+      navigate("/auth");
+      return;
+    }
+    if (user) {
+      loadData();
+    }
+  }, [user, authLoading]);
+
+  const loadData = async () => {
+    // Load tracks
+    const { data: tracksData } = await supabase
+      .from("tracks")
+      .select("*, profiles!inner(username, display_name)")
+      .order("created_at", { ascending: false })
+      .limit(8);
+
+    if (tracksData) {
+      const formattedTracks = tracksData.map((t) => ({
+        id: t.id,
+        title: t.title,
+        artist: t.profiles.display_name || t.profiles.username,
+        cover: t.cover_url || "https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?w=400&h=400&fit=crop",
+        audioUrl: t.audio_url,
+      }));
+      setTracks(formattedTracks);
+      if (formattedTracks.length > 0 && !currentTrack) {
+        setCurrentTrack(formattedTracks[0]);
+      }
+    }
+
+    // Load artists
+    const { data: artistsData } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("user_type", "artist")
+      .limit(6);
+
+    if (artistsData) {
+      const formattedArtists = await Promise.all(
+        artistsData.map(async (a) => {
+          const { count } = await supabase
+            .from("follows")
+            .select("*", { count: "exact", head: true })
+            .eq("following_id", a.id);
+
+          return {
+            id: a.id,
+            name: a.display_name || a.username,
+            genre: "Artist",
+            image: a.avatar_url || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400&h=400&fit=crop",
+            followers: count ? `${count}` : "0",
+            username: a.username,
+          };
+        })
+      );
+      setArtists(formattedArtists);
+    }
+  };
+
   const handleNext = () => {
+    if (tracks.length === 0) return;
     const nextIndex = (currentIndex + 1) % tracks.length;
     setCurrentIndex(nextIndex);
     setCurrentTrack(tracks[nextIndex]);
   };
 
   const handlePrevious = () => {
+    if (tracks.length === 0) return;
     const prevIndex = currentIndex === 0 ? tracks.length - 1 : currentIndex - 1;
     setCurrentIndex(prevIndex);
     setCurrentTrack(tracks[prevIndex]);
@@ -80,6 +111,14 @@ const Index = () => {
     setCurrentIndex(index);
     setCurrentTrack(tracks[index]);
   };
+
+  if (authLoading) {
+    return <div className="min-h-screen bg-background flex items-center justify-center">Chargement...</div>;
+  }
+
+  if (!user) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -107,37 +146,47 @@ const Index = () => {
         {/* Tendances */}
         <section className="mb-12">
           <h2 className="text-3xl font-bold text-foreground mb-6">Tendances</h2>
-          <div className="grid grid-cols-4 gap-6">
-            {tracks.map((track, index) => (
-              <TrackCard
-                key={track.id}
-                {...track}
-                onClick={() => handleTrackSelect(index)}
-              />
-            ))}
-          </div>
+          {tracks.length > 0 ? (
+            <div className="grid grid-cols-4 gap-6">
+              {tracks.map((track, index) => (
+                <TrackCard
+                  key={track.id}
+                  {...track}
+                  onClick={() => handleTrackSelect(index)}
+                />
+              ))}
+            </div>
+          ) : (
+            <p className="text-muted-foreground">Aucune musique disponible pour le moment</p>
+          )}
         </section>
 
         {/* Artistes populaires */}
         <section>
           <h2 className="text-3xl font-bold text-foreground mb-6">Artistes populaires</h2>
-          <div className="grid grid-cols-3 gap-6">
-            {artists.map((artist) => (
-              <ArtistCard
-                key={artist.id}
-                {...artist}
-                onClick={() => console.log("Artist clicked:", artist.name)}
-              />
-            ))}
-          </div>
+          {artists.length > 0 ? (
+            <div className="grid grid-cols-3 gap-6">
+              {artists.map((artist) => (
+                <ArtistCard
+                  key={artist.id}
+                  {...artist}
+                  onClick={() => navigate(`/profile/${artist.username}`)}
+                />
+              ))}
+            </div>
+          ) : (
+            <p className="text-muted-foreground">Aucun artiste pour le moment</p>
+          )}
         </section>
       </main>
 
-      <AudioPlayer
-        currentTrack={currentTrack}
-        onNext={handleNext}
-        onPrevious={handlePrevious}
-      />
+      {currentTrack && (
+        <AudioPlayer
+          currentTrack={currentTrack}
+          onNext={handleNext}
+          onPrevious={handlePrevious}
+        />
+      )}
     </div>
   );
 };
