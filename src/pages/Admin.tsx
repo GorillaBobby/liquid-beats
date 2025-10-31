@@ -3,11 +3,19 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Sidebar } from "@/components/Layout/Sidebar";
 import { useAuth } from "@/hooks/useAuth";
-import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import { Badge, CheckCircle, XCircle } from "lucide-react";
+import { Badge, CheckCircle, XCircle, Shield } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+
+const ADMIN_CODE = "ADMIN123456";
 
 interface Artist {
   id: string;
@@ -19,8 +27,7 @@ interface Artist {
 }
 
 export default function Admin() {
-  const { user } = useAuth();
-  const { isAdmin, loading: adminLoading } = useIsAdmin();
+  const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [artists, setArtists] = useState<Artist[]>([]);
@@ -28,23 +35,40 @@ export default function Admin() {
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState<"artists" | "tracks">("artists");
   const [loading, setLoading] = useState(true);
+  const [codeDialogOpen, setCodeDialogOpen] = useState(true);
+  const [code, setCode] = useState("");
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
-    if (adminLoading) return;
-    
-    if (!user || !isAdmin) {
-      navigate("/");
-      toast({
-        variant: "destructive",
-        title: "Accès refusé",
-        description: "Vous n'avez pas les permissions administrateur",
-      });
+    if (!authLoading && !user) {
+      navigate("/auth");
       return;
     }
     
-    loadArtists();
-    loadTracks();
-  }, [user, isAdmin, adminLoading]);
+    if (isAuthenticated) {
+      loadArtists();
+      loadTracks();
+    }
+  }, [user, authLoading, isAuthenticated]);
+
+  const handleVerifyCode = () => {
+    if (code !== ADMIN_CODE) {
+      toast({
+        variant: "destructive",
+        title: "Code incorrect",
+        description: "Le code admin que vous avez entré est incorrect",
+      });
+      return;
+    }
+
+    setIsAuthenticated(true);
+    setCodeDialogOpen(false);
+    toast({
+      title: "Accès autorisé ✓",
+      description: "Bienvenue dans le panneau administrateur",
+    });
+  };
 
   const loadArtists = async () => {
     try {
@@ -132,13 +156,66 @@ export default function Admin() {
       track.profiles.username.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  if (adminLoading || loading) {
+  if (authLoading) {
     return <div className="min-h-screen bg-background flex items-center justify-center">Chargement...</div>;
   }
 
   return (
     <div className="min-h-screen bg-background">
       <Sidebar />
+
+      {/* Admin Code Dialog */}
+      <Dialog open={codeDialogOpen} onOpenChange={(open) => {
+        if (!open && !isAuthenticated) {
+          navigate("/");
+        }
+        setCodeDialogOpen(open);
+      }}>
+        <DialogContent className="bg-glass/95 backdrop-blur-glass border-glass-border">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold flex items-center gap-2">
+              <Shield className="w-6 h-6 text-primary" />
+              Code Administrateur
+            </DialogTitle>
+            <DialogDescription>
+              Entrez le code administrateur pour accéder au panneau admin
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 pt-4">
+            <div>
+              <Input
+                type="password"
+                value={code}
+                onChange={(e) => setCode(e.target.value.toUpperCase())}
+                placeholder="Entrez le code admin"
+                className="bg-glass/30 border-glass-border text-center text-lg font-mono tracking-wider"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    handleVerifyCode();
+                  }
+                }}
+              />
+            </div>
+
+            <Button
+              onClick={handleVerifyCode}
+              disabled={isVerifying || !code}
+              className="w-full bg-gradient-primary hover:shadow-glow transition-all duration-300"
+            >
+              {isVerifying ? "Vérification..." : "Vérifier"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {!isAuthenticated && (
+        <div className="min-h-screen flex items-center justify-center">
+          <p className="text-muted-foreground">Chargement...</p>
+        </div>
+      )}
+
+      {isAuthenticated && (
 
       <main className="ml-64 p-8">
         <div className="max-w-6xl mx-auto">
@@ -270,6 +347,7 @@ export default function Admin() {
           )}
         </div>
       </main>
+      )}
     </div>
   );
 }
