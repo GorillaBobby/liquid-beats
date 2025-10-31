@@ -7,8 +7,9 @@ import { Button } from "@/components/ui/button";
 import { TrackCard } from "@/components/Cards/TrackCard";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { Upload, LogOut, MessageCircle, UserPlus, UserMinus } from "lucide-react";
+import { Upload, LogOut, MessageCircle, UserPlus, UserMinus, Edit } from "lucide-react";
 import { UploadTrackDialog } from "@/components/Upload/UploadTrackDialog";
+import { EditProfileDialog } from "@/components/Profile/EditProfileDialog";
 
 interface Profile {
   id: string;
@@ -37,6 +38,7 @@ export default function Profile() {
   const [isFollowing, setIsFollowing] = useState(false);
   const [followersCount, setFollowersCount] = useState(0);
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [currentTrack, setCurrentTrack] = useState<Track | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -187,10 +189,18 @@ export default function Profile() {
               <div className="flex gap-3">
                 {isOwnProfile ? (
                   <>
+                    <Button
+                      onClick={() => setEditDialogOpen(true)}
+                      className="bg-gradient-primary hover:shadow-glow transition-all duration-300"
+                    >
+                      <Edit className="w-4 h-4 mr-2" />
+                      Modifier le profil
+                    </Button>
                     {profile.user_type === "artist" && (
                       <Button
                         onClick={() => setUploadDialogOpen(true)}
-                        className="bg-gradient-primary hover:shadow-glow transition-all duration-300"
+                        variant="outline"
+                        className="bg-glass/30 border-glass-border"
                       >
                         <Upload className="w-4 h-4 mr-2" />
                         Ajouter une musique
@@ -280,6 +290,17 @@ export default function Profile() {
         open={uploadDialogOpen}
         onOpenChange={setUploadDialogOpen}
         onUploadSuccess={loadProfile}
+      />
+
+      <EditProfileDialog
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        onSuccess={loadProfile}
+        currentProfile={{
+          display_name: profile?.display_name || null,
+          bio: profile?.bio || null,
+          avatar_url: profile?.avatar_url || null,
+        }}
       />
     </div>
   );

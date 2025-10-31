@@ -46,9 +46,9 @@ const Index = () => {
     // Load tracks
     const { data: tracksData } = await supabase
       .from("tracks")
-      .select("*, profiles!inner(username, display_name)")
+      .select("*, profiles!inner(username, display_name, avatar_url)")
       .order("created_at", { ascending: false })
-      .limit(8);
+      .limit(12);
 
     if (tracksData) {
       const formattedTracks = tracksData.map((t) => ({
@@ -69,7 +69,7 @@ const Index = () => {
       .from("profiles")
       .select("*")
       .eq("user_type", "artist")
-      .limit(6);
+      .limit(9);
 
     if (artistsData) {
       const formattedArtists = await Promise.all(
@@ -145,7 +145,7 @@ const Index = () => {
 
         {/* Tendances */}
         <section className="mb-12">
-          <h2 className="text-3xl font-bold text-foreground mb-6">Tendances</h2>
+          <h2 className="text-3xl font-bold text-foreground mb-6">Musiques récentes</h2>
           {tracks.length > 0 ? (
             <div className="grid grid-cols-4 gap-6">
               {tracks.map((track, index) => (
@@ -157,13 +157,18 @@ const Index = () => {
               ))}
             </div>
           ) : (
-            <p className="text-muted-foreground">Aucune musique disponible pour le moment</p>
+            <div className="text-center py-12">
+              <p className="text-muted-foreground text-lg mb-4">Aucune musique pour le moment</p>
+              <p className="text-sm text-muted-foreground">
+                Les artistes peuvent uploader leurs musiques sur leur profil !
+              </p>
+            </div>
           )}
         </section>
 
         {/* Artistes populaires */}
         <section>
-          <h2 className="text-3xl font-bold text-foreground mb-6">Artistes populaires</h2>
+          <h2 className="text-3xl font-bold text-foreground mb-6">Artistes</h2>
           {artists.length > 0 ? (
             <div className="grid grid-cols-3 gap-6">
               {artists.map((artist) => (
@@ -175,7 +180,9 @@ const Index = () => {
               ))}
             </div>
           ) : (
-            <p className="text-muted-foreground">Aucun artiste pour le moment</p>
+            <div className="text-center py-12">
+              <p className="text-muted-foreground">Aucun artiste inscrit pour le moment</p>
+            </div>
           )}
         </section>
       </main>
