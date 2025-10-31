@@ -42,6 +42,7 @@ interface Album {
   cover_url: string;
   artist: string;
   trackCount: number;
+  artistId: string;
 }
 
 export default function Profile() {
@@ -122,6 +123,7 @@ export default function Profile() {
                 cover_url: album.cover_url,
                 artist: profileData.display_name || profileData.username,
                 trackCount: count || 0,
+                artistId: album.artist_id,
               };
             })
           );
@@ -352,6 +354,8 @@ export default function Profile() {
                       artist={album.artist}
                       coverUrl={album.cover_url}
                       trackCount={album.trackCount}
+                      artistId={album.artistId}
+                      onDelete={loadProfile}
                     />
                   ))}
                 </div>

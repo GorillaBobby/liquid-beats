@@ -28,6 +28,7 @@ interface Album {
   cover_url: string;
   artist: string;
   trackCount: number;
+  artistId: string;
 }
 
 interface Artist {
@@ -93,6 +94,7 @@ const Index = () => {
             cover_url: album.cover_url,
             artist: album.profiles.display_name || album.profiles.username,
             trackCount: count || 0,
+            artistId: album.artist_id,
           };
         })
       );
@@ -218,6 +220,8 @@ const Index = () => {
                   artist={album.artist}
                   coverUrl={album.cover_url}
                   trackCount={album.trackCount}
+                  artistId={album.artistId}
+                  onDelete={loadData}
                 />
               ))}
             </div>

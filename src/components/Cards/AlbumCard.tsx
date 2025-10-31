@@ -1,5 +1,9 @@
-import { Disc3, Music } from "lucide-react";
+import { Disc3, Music, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
 
 interface AlbumCardProps {
   id: string;
@@ -7,10 +11,50 @@ interface AlbumCardProps {
   artist: string;
   coverUrl: string;
   trackCount: number;
+  artistId?: string;
+  onDelete?: () => void;
 }
 
-export const AlbumCard = ({ id, title, artist, coverUrl, trackCount }: AlbumCardProps) => {
+export const AlbumCard = ({ id, title, artist, coverUrl, trackCount, artistId, onDelete }: AlbumCardProps) => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const { toast } = useToast();
+
+  const handleDelete = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!confirm(`Êtes-vous sûr de vouloir supprimer l'album "${title}" ? Les musiques seront transformées en singles.`)) return;
+
+    try {
+      // Transform album tracks to singles (set album_id to null)
+      const { error: tracksError } = await supabase
+        .from("tracks")
+        .update({ album_id: null })
+        .eq("album_id", id);
+
+      if (tracksError) throw tracksError;
+
+      // Delete the album
+      const { error: albumError } = await supabase
+        .from("albums")
+        .delete()
+        .eq("id", id);
+
+      if (albumError) throw albumError;
+
+      toast({
+        title: "Album supprimé",
+        description: "L'album a été supprimé et les musiques transformées en singles",
+      });
+
+      if (onDelete) onDelete();
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: error.message,
+      });
+    }
+  };
 
   return (
     <div
@@ -31,9 +75,22 @@ export const AlbumCard = ({ id, title, artist, coverUrl, trackCount }: AlbumCard
       <h3 className="font-semibold text-foreground truncate mb-1">{title}</h3>
       <p className="text-sm text-muted-foreground truncate">{artist}</p>
       
-      <div className="flex items-center gap-1 mt-2 text-xs text-muted-foreground">
-        <Music className="w-3 h-3" />
-        <span>{trackCount} {trackCount > 1 ? "titres" : "titre"}</span>
+      <div className="flex items-center justify-between mt-2">
+        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+          <Music className="w-3 h-3" />
+          <span>{trackCount} {trackCount > 1 ? "titres" : "titre"}</span>
+        </div>
+        
+        {user?.id === artistId && (
+          <Button
+            onClick={handleDelete}
+            variant="ghost"
+            size="sm"
+            className="text-destructive hover:text-destructive h-auto p-1"
+          >
+            <Trash2 className="w-4 h-4" />
+          </Button>
+        )}
       </div>
     </div>
   );
