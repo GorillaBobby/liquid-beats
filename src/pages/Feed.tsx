@@ -1,0 +1,153 @@
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { Sidebar } from "@/components/Layout/Sidebar";
+import { AudioPlayer } from "@/components/Player/AudioPlayer";
+import { TrackCard } from "@/components/Cards/TrackCard";
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
+
+interface Track {
+  id: string;
+  title: string;
+  artist: string;
+  cover: string;
+  audioUrl: string;
+  created_at: string;
+}
+
+export default function Feed() {
+  const { user, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const [tracks, setTracks] = useState<Track[]>([]);
+  const [currentTrack, setCurrentTrack] = useState<Track | null>(null);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      navigate("/auth");
+      return;
+    }
+    if (user) {
+      loadFeed();
+    }
+  }, [user, authLoading]);
+
+  const loadFeed = async () => {
+    if (!user) return;
+
+    try {
+      setLoading(true);
+
+      // Get users I follow
+      const { data: followsData } = await supabase
+        .from("follows")
+        .select("following_id")
+        .eq("follower_id", user.id);
+
+      if (!followsData || followsData.length === 0) {
+        setLoading(false);
+        return;
+      }
+
+      const followingIds = followsData.map((f) => f.following_id);
+
+      // Get tracks from followed artists
+      const { data: tracksData } = await supabase
+        .from("tracks")
+        .select("*, profiles!inner(username, display_name, avatar_url)")
+        .in("artist_id", followingIds)
+        .order("created_at", { ascending: false });
+
+      if (tracksData) {
+        const formattedTracks = tracksData.map((t) => ({
+          id: t.id,
+          title: t.title,
+          artist: t.profiles.display_name || t.profiles.username,
+          cover: t.cover_url || "https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?w=400&h=400&fit=crop",
+          audioUrl: t.audio_url,
+          created_at: t.created_at,
+        }));
+        setTracks(formattedTracks);
+        if (formattedTracks.length > 0 && !currentTrack) {
+          setCurrentTrack(formattedTracks[0]);
+        }
+      }
+    } catch (error: any) {
+      toast({ variant: "destructive", title: "Erreur", description: error.message });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleNext = () => {
+    if (tracks.length === 0) return;
+    const nextIndex = (currentIndex + 1) % tracks.length;
+    setCurrentIndex(nextIndex);
+    setCurrentTrack(tracks[nextIndex]);
+  };
+
+  const handlePrevious = () => {
+    if (tracks.length === 0) return;
+    const prevIndex = currentIndex === 0 ? tracks.length - 1 : currentIndex - 1;
+    setCurrentIndex(prevIndex);
+    setCurrentTrack(tracks[prevIndex]);
+  };
+
+  const handleTrackSelect = (index: number) => {
+    setCurrentIndex(index);
+    setCurrentTrack(tracks[index]);
+  };
+
+  if (authLoading || loading) {
+    return <div className="min-h-screen bg-background flex items-center justify-center">Chargement...</div>;
+  }
+
+  return (
+    <div className="min-h-screen bg-background">
+      <Sidebar />
+
+      <main className="ml-64 pb-32 p-8">
+        <section>
+          <h1 className="text-4xl font-bold text-foreground mb-2">Votre fil d'actualité</h1>
+          <p className="text-muted-foreground mb-8">Nouvelles musiques des artistes que vous suivez</p>
+
+          {tracks.length > 0 ? (
+            <div className="grid grid-cols-4 gap-6">
+              {tracks.map((track, index) => (
+                <TrackCard
+                  key={track.id}
+                  {...track}
+                  onClick={() => handleTrackSelect(index)}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-24">
+              <p className="text-muted-foreground text-lg mb-4">Votre fil est vide</p>
+              <p className="text-sm text-muted-foreground mb-6">
+                Suivez des artistes pour voir leurs nouvelles musiques ici !
+              </p>
+              <button
+                onClick={() => navigate("/")}
+                className="px-6 py-3 bg-gradient-primary rounded-xl text-primary-foreground hover:shadow-glow transition-all duration-300"
+              >
+                Découvrir des artistes
+              </button>
+            </div>
+          )}
+        </section>
+      </main>
+
+      {currentTrack && (
+        <AudioPlayer
+          currentTrack={currentTrack}
+          onNext={handleNext}
+          onPrevious={handlePrevious}
+        />
+      )}
+    </div>
+  );
+}
