@@ -163,8 +163,8 @@ export const TrackCard = ({ id, title, artist, cover, audioUrl, onClick, onPlay,
           <Button
             onClick={handleShare}
             variant="ghost"
-            size="sm"
-            className="text-muted-foreground hover:text-foreground"
+            size="icon"
+            className="text-muted-foreground hover:text-foreground h-9 w-9"
           >
             <Share2 className="w-4 h-4" />
           </Button>
@@ -173,8 +173,8 @@ export const TrackCard = ({ id, title, artist, cover, audioUrl, onClick, onPlay,
             <Button
               onClick={handleDownload}
               variant="ghost"
-              size="sm"
-              className="text-muted-foreground hover:text-foreground"
+              size="icon"
+              className="text-muted-foreground hover:text-foreground h-9 w-9"
             >
               <Download className="w-4 h-4" />
             </Button>
@@ -184,8 +184,8 @@ export const TrackCard = ({ id, title, artist, cover, audioUrl, onClick, onPlay,
             <Button
               onClick={handleDelete}
               variant="ghost"
-              size="sm"
-              className="text-destructive hover:text-destructive"
+              size="icon"
+              className="text-destructive hover:text-destructive h-9 w-9"
             >
               <Trash2 className="w-4 h-4" />
             </Button>
