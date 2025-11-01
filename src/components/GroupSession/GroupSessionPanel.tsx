@@ -33,7 +33,7 @@ export default function GroupSessionPanel() {
   };
 
   return (
-    <div className="fixed top-20 right-4 w-80 h-[calc(100vh-180px)] bg-glass/95 backdrop-blur-glass border border-glass-border rounded-lg shadow-glass flex flex-col z-40 animate-slide-in-right">
+    <div className="fixed top-32 right-4 w-80 h-[calc(100vh-220px)] bg-glass/95 backdrop-blur-glass border border-glass-border rounded-lg shadow-glass flex flex-col z-40 animate-slide-in-right">
       {/* Header */}
       <div className="p-4 border-b border-glass-border">
         <div className="flex items-center gap-2">
