@@ -354,7 +354,7 @@ export default function Profile() {
           </div>
         </div>
 
-        {/* Albums & Singles Section */}
+        {/* Albums & Singles Section for Artists */}
         {profile.user_type === "artist" && (
           <>
             {/* Albums */}
@@ -413,6 +413,29 @@ export default function Profile() {
               </p>
             )}
           </>
+        )}
+
+        {/* Fan Profile Section */}
+        {profile.user_type === "fan" && (
+          <div className="bg-glass/50 backdrop-blur-glass rounded-2xl md:rounded-3xl p-6 md:p-8 border border-glass-border shadow-glass">
+            <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-4">
+              {isOwnProfile ? "Votre activité" : "Activité"}
+            </h2>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between p-4 bg-glass/30 rounded-xl border border-glass-border">
+                <div>
+                  <p className="text-sm text-muted-foreground">Abonnements</p>
+                  <p className="text-2xl font-bold text-foreground">{followingCount}</p>
+                </div>
+              </div>
+              <div className="flex items-center justify-between p-4 bg-glass/30 rounded-xl border border-glass-border">
+                <div>
+                  <p className="text-sm text-muted-foreground">Abonnés</p>
+                  <p className="text-2xl font-bold text-foreground">{followersCount}</p>
+                </div>
+              </div>
+            </div>
+          </div>
         )}
       </main>
 
