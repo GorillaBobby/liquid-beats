@@ -51,51 +51,66 @@ export const AudioPlayerProvider = ({ children }: { children: ReactNode }) => {
   const sourceNodeRef = useRef<MediaElementAudioSourceNode | null>(null);
   const filtersRef = useRef<Record<number, BiquadFilterNode>>({});
   const masterGainNodeRef = useRef<GainNode | null>(null);
+  const volumeGainNodeRef = useRef<GainNode | null>(null);
+  const isAudioInitializedRef = useRef(false);
 
-  // Initialize Web Audio API
-  useEffect(() => {
-    if (!audioRef.current) return;
+  // Initialize Web Audio API on first play
+  const initializeAudio = () => {
+    if (isAudioInitializedRef.current || !audioRef.current) return;
 
-    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-    audioContextRef.current = audioContext;
+    try {
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      audioContextRef.current = audioContext;
 
-    const source = audioContext.createMediaElementSource(audioRef.current);
-    sourceNodeRef.current = source;
+      const source = audioContext.createMediaElementSource(audioRef.current);
+      sourceNodeRef.current = source;
 
-    // Create EQ filters for each frequency band
-    const frequencies = [100, 200, 400, 800, 1600, 3200, 6400];
-    let previousNode: AudioNode = source;
+      // Create EQ filters for each frequency band
+      const frequencies = [100, 200, 400, 800, 1600, 3200, 6400];
+      let previousNode: AudioNode = source;
 
-    frequencies.forEach((freq) => {
-      const filter = audioContext.createBiquadFilter();
-      filter.type = "peaking";
-      filter.frequency.value = freq;
-      filter.Q.value = 1;
-      filter.gain.value = 0;
-      
-      previousNode.connect(filter);
-      previousNode = filter;
-      filtersRef.current[freq] = filter;
-    });
+      frequencies.forEach((freq) => {
+        const filter = audioContext.createBiquadFilter();
+        filter.type = "peaking";
+        filter.frequency.value = freq;
+        filter.Q.value = 1;
+        filter.gain.value = 0;
+        
+        previousNode.connect(filter);
+        previousNode = filter;
+        filtersRef.current[freq] = filter;
+      });
 
-    // Create master gain node
-    const masterGainNode = audioContext.createGain();
-    masterGainNode.gain.value = 1;
-    masterGainNodeRef.current = masterGainNode;
+      // Create volume gain node
+      const volumeGainNode = audioContext.createGain();
+      volumeGainNode.gain.value = volume / 100;
+      volumeGainNodeRef.current = volumeGainNode;
+      previousNode.connect(volumeGainNode);
+      previousNode = volumeGainNode;
 
-    previousNode.connect(masterGainNode);
-    masterGainNode.connect(audioContext.destination);
+      // Create master gain node
+      const masterGainNode = audioContext.createGain();
+      masterGainNode.gain.value = 1;
+      masterGainNodeRef.current = masterGainNode;
 
-    return () => {
-      audioContext.close();
-    };
-  }, []);
+      previousNode.connect(masterGainNode);
+      masterGainNode.connect(audioContext.destination);
+
+      isAudioInitializedRef.current = true;
+    } catch (error) {
+      console.error("Failed to initialize audio:", error);
+    }
+  };
 
   const setCurrentTrack = (track: Track) => {
     setCurrentTrackState(track);
     if (audioRef.current) {
       audioRef.current.src = track.audioUrl;
       audioRef.current.load();
+      initializeAudio();
+      if (audioContextRef.current?.state === 'suspended') {
+        audioContextRef.current.resume();
+      }
       audioRef.current.play().then(() => setIsPlaying(true));
     }
   };
@@ -115,6 +130,10 @@ export const AudioPlayerProvider = ({ children }: { children: ReactNode }) => {
       audioRef.current.pause();
       setIsPlaying(false);
     } else {
+      initializeAudio();
+      if (audioContextRef.current?.state === 'suspended') {
+        audioContextRef.current.resume();
+      }
       audioRef.current.play().then(() => setIsPlaying(true));
     }
   };
@@ -142,7 +161,9 @@ export const AudioPlayerProvider = ({ children }: { children: ReactNode }) => {
 
   const setVolume = (vol: number) => {
     setVolumeState(vol);
-    if (audioRef.current) {
+    if (volumeGainNodeRef.current) {
+      volumeGainNodeRef.current.gain.value = vol / 100;
+    } else if (audioRef.current) {
       audioRef.current.volume = vol / 100;
     }
   };
