@@ -4,7 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Sidebar } from "@/components/Layout/Sidebar";
 import { useAuth } from "@/hooks/useAuth";
 import { useAudioPlayer } from "@/contexts/AudioPlayerContext";
-import { Play, Disc3, Plus } from "lucide-react";
+import { Play, Disc3, Plus, Share2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { AddToPlaylistDialog } from "@/components/Track/AddToPlaylistDialog";
 
@@ -35,6 +36,7 @@ export default function AlbumDetail() {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { setPlaylist } = useAudioPlayer();
+  const { toast } = useToast();
   const [album, setAlbum] = useState<Album | null>(null);
   const [tracks, setTracks] = useState<Track[]>([]);
   const [loading, setLoading] = useState(true);
@@ -92,6 +94,54 @@ export default function AlbumDetail() {
     setPlaylist(playlist, 0);
   };
 
+  const handleShareAlbum = async () => {
+    const shareUrl = `${window.location.origin}/album/${id}`;
+    
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: album?.title,
+          text: `Découvrez l'album "${album?.title}" de ${album?.artist.display_name || album?.artist.username}`,
+          url: shareUrl,
+        });
+      } catch (error: any) {
+        if (error.name !== "AbortError") {
+          console.error("Error sharing:", error);
+        }
+      }
+    } else {
+      await navigator.clipboard.writeText(shareUrl);
+      toast({
+        title: "Lien copié",
+        description: "Le lien de l'album a été copié dans le presse-papier",
+      });
+    }
+  };
+
+  const handleShareTrack = async (trackId: string, trackTitle: string) => {
+    const shareUrl = `${window.location.origin}/track/${trackId}`;
+    
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: trackTitle,
+          text: `Écoutez "${trackTitle}" sur ${album?.title}`,
+          url: shareUrl,
+        });
+      } catch (error: any) {
+        if (error.name !== "AbortError") {
+          console.error("Error sharing:", error);
+        }
+      }
+    } else {
+      await navigator.clipboard.writeText(shareUrl);
+      toast({
+        title: "Lien copié",
+        description: "Le lien de la musique a été copié dans le presse-papier",
+      });
+    }
+  };
+
   if (authLoading || loading) {
     return <div className="min-h-screen bg-background flex items-center justify-center">Chargement...</div>;
   }
@@ -140,14 +190,24 @@ export default function AlbumDetail() {
               {album.description && (
                 <p className="text-muted-foreground mb-4">{album.description}</p>
               )}
-              <Button
-                onClick={playAlbum}
-                size="lg"
-                className="bg-gradient-primary hover:shadow-glow transition-all duration-300 w-fit"
-              >
-                <Play className="w-5 h-5 mr-2" />
-                Lire l'album
-              </Button>
+              <div className="flex gap-3">
+                <Button
+                  onClick={playAlbum}
+                  size="lg"
+                  className="bg-gradient-primary hover:shadow-glow transition-all duration-300"
+                >
+                  <Play className="w-5 h-5 mr-2" />
+                  Lire l'album
+                </Button>
+                <Button
+                  onClick={handleShareAlbum}
+                  size="lg"
+                  variant="secondary"
+                >
+                  <Share2 className="w-5 h-5 mr-2" />
+                  Partager
+                </Button>
+              </div>
             </div>
           </div>
 
@@ -176,18 +236,29 @@ export default function AlbumDetail() {
                     {track.title}
                   </h3>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setSelectedTrackId(track.id);
-                    setAddToPlaylistOpen(true);
-                  }}
-                  className="opacity-0 group-hover:opacity-100 transition-opacity"
-                >
-                  <Plus className="w-5 h-5" />
-                </Button>
+                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleShareTrack(track.id, track.title);
+                    }}
+                  >
+                    <Share2 className="w-5 h-5" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedTrackId(track.id);
+                      setAddToPlaylistOpen(true);
+                    }}
+                  >
+                    <Plus className="w-5 h-5" />
+                  </Button>
+                </div>
               </div>
             ))}
           </div>

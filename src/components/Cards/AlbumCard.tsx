@@ -1,4 +1,4 @@
-import { Disc3, Music, Trash2 } from "lucide-react";
+import { Disc3, Music, Trash2, Share2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -20,6 +20,31 @@ export const AlbumCard = ({ id, title, artist, coverUrl, trackCount, artistId, o
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
+
+  const handleShare = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const shareUrl = `${window.location.origin}/album/${id}`;
+    
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: title,
+          text: `Découvrez l'album "${title}" de ${artist}`,
+          url: shareUrl,
+        });
+      } catch (error: any) {
+        if (error.name !== "AbortError") {
+          console.error("Error sharing:", error);
+        }
+      }
+    } else {
+      await navigator.clipboard.writeText(shareUrl);
+      toast({
+        title: "Lien copié",
+        description: "Le lien de l'album a été copié dans le presse-papier",
+      });
+    }
+  };
 
   const handleDelete = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -82,16 +107,27 @@ export const AlbumCard = ({ id, title, artist, coverUrl, trackCount, artistId, o
           <span>{trackCount} {trackCount > 1 ? "titres" : "titre"}</span>
         </div>
         
-        {user?.id === artistId && (
+        <div className="flex items-center gap-1">
           <Button
-            onClick={handleDelete}
+            onClick={handleShare}
             variant="ghost"
             size="sm"
-            className="text-destructive hover:text-destructive h-auto p-1"
+            className="h-auto p-1"
           >
-            <Trash2 className="w-4 h-4" />
+            <Share2 className="w-4 h-4" />
           </Button>
-        )}
+          
+          {user?.id === artistId && (
+            <Button
+              onClick={handleDelete}
+              variant="ghost"
+              size="sm"
+              className="text-destructive hover:text-destructive h-auto p-1"
+            >
+              <Trash2 className="w-4 h-4" />
+            </Button>
+          )}
+        </div>
       </div>
     </div>
   );
