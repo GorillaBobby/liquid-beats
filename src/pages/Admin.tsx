@@ -5,7 +5,7 @@ import { Sidebar } from "@/components/Layout/Sidebar";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import { Badge, XCircle, Shield } from "lucide-react";
+import { Badge, XCircle, Shield, Trash2, Users } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
   Dialog,
@@ -46,6 +46,15 @@ interface AdminLog {
   created_at: string;
 }
 
+interface User {
+  id: string;
+  username: string;
+  display_name: string | null;
+  avatar_url: string | null;
+  user_type: string;
+  created_at: string;
+}
+
 export default function Admin() {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
@@ -53,8 +62,9 @@ export default function Admin() {
   const [artists, setArtists] = useState<Artist[]>([]);
   const [allTracks, setAllTracks] = useState<any[]>([]);
   const [logs, setLogs] = useState<AdminLog[]>([]);
+  const [allUsers, setAllUsers] = useState<User[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [activeTab, setActiveTab] = useState<"artists" | "tracks" | "logs">("artists");
+  const [activeTab, setActiveTab] = useState<"artists" | "tracks" | "users" | "logs">("artists");
   const [loading, setLoading] = useState(true);
   const [codeDialogOpen, setCodeDialogOpen] = useState(true);
   const [code, setCode] = useState("");
@@ -70,6 +80,7 @@ export default function Admin() {
     if (isAuthenticated) {
       loadArtists();
       loadTracks();
+      loadUsers();
       loadLogs();
     }
   }, [user, authLoading, isAuthenticated]);
@@ -119,6 +130,20 @@ export default function Admin() {
 
       if (error) throw error;
       setAllTracks(tracksData || []);
+    } catch (error: any) {
+      toast({ variant: "destructive", title: "Erreur", description: error.message });
+    }
+  };
+
+  const loadUsers = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      setAllUsers(data || []);
     } catch (error: any) {
       toast({ variant: "destructive", title: "Erreur", description: error.message });
     }
@@ -209,6 +234,42 @@ export default function Admin() {
     }
   };
 
+  const deleteUser = async (userId: string) => {
+    const targetUser = allUsers.find(u => u.id === userId);
+    if (!confirm(`Êtes-vous sûr de vouloir supprimer définitivement le compte de ${targetUser?.display_name || targetUser?.username} et toutes ses données ?`)) return;
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error("Vous devez être connecté");
+      }
+
+      const { data, error } = await supabase.functions.invoke("admin-delete-account", {
+        body: { userId },
+      });
+
+      if (error) throw error;
+
+      setAllUsers((prev) => prev.filter((u) => u.id !== userId));
+      setArtists((prev) => prev.filter((a) => a.id !== userId));
+      
+      toast({
+        title: "Compte supprimé",
+        description: "Le compte et toutes les données associées ont été supprimés définitivement",
+      });
+      
+      loadUsers();
+      loadArtists();
+    } catch (error: any) {
+      console.error("Delete user error:", error);
+      toast({ 
+        variant: "destructive", 
+        title: "Erreur", 
+        description: error.message || "Impossible de supprimer le compte"
+      });
+    }
+  };
+
   const filteredArtists = artists.filter(
     (artist) =>
       artist.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -219,6 +280,12 @@ export default function Admin() {
     (track) =>
       track.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       track.profiles.username.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const filteredUsers = allUsers.filter(
+    (user) =>
+      user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.display_name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   if (authLoading) {
@@ -308,6 +375,14 @@ export default function Admin() {
               Musiques
             </Button>
             <Button
+              variant={activeTab === "users" ? "default" : "outline"}
+              onClick={() => setActiveTab("users")}
+              className={activeTab === "users" ? "bg-gradient-primary" : "bg-glass/30 border-glass-border"}
+            >
+              <Users className="w-4 h-4 mr-2" />
+              Utilisateurs
+            </Button>
+            <Button
               variant={activeTab === "logs" ? "default" : "outline"}
               onClick={() => setActiveTab("logs")}
               className={activeTab === "logs" ? "bg-gradient-primary" : "bg-glass/30 border-glass-border"}
@@ -319,7 +394,13 @@ export default function Admin() {
           {activeTab !== "logs" && (
             <div className="mb-6">
               <Input
-                placeholder={activeTab === "artists" ? "Rechercher un artiste..." : "Rechercher une musique..."}
+                placeholder={
+                  activeTab === "artists" 
+                    ? "Rechercher un artiste..." 
+                    : activeTab === "tracks"
+                    ? "Rechercher une musique..."
+                    : "Rechercher un utilisateur..."
+                }
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="bg-glass/30 border-glass-border max-w-md"
@@ -433,6 +514,47 @@ export default function Admin() {
                 <p className="text-center text-muted-foreground py-12">Aucune musique trouvée</p>
               )}
             </div>
+          ) : activeTab === "users" ? (
+            <div className="space-y-4">
+              {filteredUsers.map((user) => (
+                <div
+                  key={user.id}
+                  className="bg-glass/50 backdrop-blur-glass rounded-2xl p-6 border border-glass-border flex items-center gap-4"
+                >
+                  <img
+                    src={user.avatar_url || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&h=200&fit=crop"}
+                    alt={user.display_name || user.username}
+                    className="w-16 h-16 rounded-full object-cover"
+                  />
+
+                  <div className="flex-1">
+                    <h3 className="font-bold text-foreground">
+                      {user.display_name || user.username}
+                    </h3>
+                    <p className="text-sm text-muted-foreground">@{user.username}</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Type: {user.user_type === 'artist' ? 'Artiste' : 'Fan'}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Inscrit le: {new Date(user.created_at).toLocaleDateString('fr-FR')}
+                    </p>
+                  </div>
+
+                  <Button
+                    onClick={() => deleteUser(user.id)}
+                    variant="outline"
+                    className="bg-glass/30 border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Supprimer le compte
+                  </Button>
+                </div>
+              ))}
+
+              {filteredUsers.length === 0 && (
+                <p className="text-center text-muted-foreground py-12">Aucun utilisateur trouvé</p>
+              )}
+            </div>
           ) : (
             <div className="space-y-4">
               <div className="bg-glass/50 backdrop-blur-glass rounded-2xl p-6 border border-glass-border">
@@ -446,6 +568,7 @@ export default function Admin() {
                           {log.event_type === 'new_track' && '🎵 Nouvelle musique'}
                           {log.event_type === 'new_album' && '💿 Nouvel album'}
                           {log.event_type === 'verification_change' && '✓ Certification modifiée'}
+                          {log.event_type === 'account_deleted' && '🗑️ Compte supprimé'}
                         </span>
                         <span className="text-xs text-muted-foreground">
                           {new Date(log.created_at).toLocaleString('fr-FR')}
@@ -481,6 +604,13 @@ export default function Admin() {
                               'Non certifié'
                             }
                           </p>
+                        </div>
+                      )}
+                      
+                      {log.event_type === 'account_deleted' && (
+                        <div className="text-sm text-muted-foreground">
+                          <p>Compte supprimé: {log.details?.deleted_user_id}</p>
+                          <p>Supprimé par: {log.details?.deleted_by_admin}</p>
                         </div>
                       )}
                     </div>
