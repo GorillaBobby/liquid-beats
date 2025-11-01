@@ -28,7 +28,15 @@ export default function GlobalAudioPlayer() {
   const [lyricsOpen, setLyricsOpen] = useState(false);
   const [createSessionOpen, setCreateSessionOpen] = useState(false);
   const [joinSessionOpen, setJoinSessionOpen] = useState(false);
-  const { currentSession } = useGroupSession();
+  const { currentSession, isHost, syncPlayback } = useGroupSession();
+
+  const handleSeek = (value: number) => {
+    seek(value);
+    if (isHost && currentSession) {
+      // Sync immediately after seeking
+      setTimeout(() => syncPlayback?.(), 100);
+    }
+  };
 
   const formatTime = (time: number) => {
     if (isNaN(time)) return "0:00";
@@ -98,7 +106,7 @@ export default function GlobalAudioPlayer() {
               value={[currentTime]}
               max={duration || 100}
               step={0.1}
-              onValueChange={(value) => seek(value[0])}
+              onValueChange={(value) => handleSeek(value[0])}
               className="flex-1"
             />
             <span className="text-[10px] md:text-xs text-muted-foreground w-8 md:w-12">

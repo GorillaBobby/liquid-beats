@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { X, Send, Users, Smile } from "lucide-react";
+import { X, Send, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -22,7 +22,6 @@ export default function GroupSessionPanel() {
   } = useGroupSession();
 
   const [message, setMessage] = useState("");
-  const [showReactions, setShowReactions] = useState(false);
 
   if (!currentSession) return null;
 
@@ -30,11 +29,6 @@ export default function GroupSessionPanel() {
     if (!message.trim()) return;
     sendMessage(message);
     setMessage("");
-  };
-
-  const handleReaction = (reaction: string) => {
-    sendReaction(reaction);
-    setShowReactions(false);
   };
 
   return (
@@ -108,14 +102,14 @@ export default function GroupSessionPanel() {
                 </div>
               )}
               {msg.reaction && (
-                <div className="flex items-center gap-2 text-2xl">
+                <div className="flex items-center gap-2 pl-2 py-1">
                   <Avatar className="w-5 h-5">
                     <AvatarImage src={msg.profiles?.avatar_url} />
-                    <AvatarFallback className="text-xs">
+                    <AvatarFallback className="text-[8px]">
                       {msg.profiles?.username?.[0]?.toUpperCase() || "?"}
                     </AvatarFallback>
                   </Avatar>
-                  <span>{msg.reaction}</span>
+                  <span className="text-2xl animate-bounce-subtle">{msg.reaction}</span>
                 </div>
               )}
             </div>
@@ -125,30 +119,20 @@ export default function GroupSessionPanel() {
 
       {/* Input */}
       <div className="p-3 border-t border-glass-border">
-        {showReactions && (
-          <div className="mb-2 flex gap-2 justify-center">
-            {REACTIONS.map((reaction) => (
-              <Button
-                key={reaction}
-                variant="ghost"
-                size="sm"
-                onClick={() => handleReaction(reaction)}
-                className="text-2xl p-1 h-auto"
-              >
-                {reaction}
-              </Button>
-            ))}
-          </div>
-        )}
+        <div className="mb-2 flex gap-1 flex-wrap">
+          {REACTIONS.map((reaction) => (
+            <Button
+              key={reaction}
+              variant="ghost"
+              size="sm"
+              onClick={() => sendReaction(reaction)}
+              className="text-xl p-2 h-auto hover:scale-125 transition-transform"
+            >
+              {reaction}
+            </Button>
+          ))}
+        </div>
         <div className="flex gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setShowReactions(!showReactions)}
-            className="shrink-0"
-          >
-            <Smile className="w-5 h-5" />
-          </Button>
           <Input
             placeholder="Message..."
             value={message}

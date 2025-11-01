@@ -269,6 +269,13 @@ export const useGroupSession = () => {
     }
   }, [isHost, currentSession, currentTime, isPlaying]);
 
+  // Manual sync for pause/play/seek changes
+  useEffect(() => {
+    if (isHost && currentSession) {
+      syncPlayback();
+    }
+  }, [isPlaying]);
+
   // Auto-sync every 2 seconds for host
   useEffect(() => {
     if (!isHost || !currentSession) return;
@@ -396,6 +403,7 @@ export const useGroupSession = () => {
     joinSession,
     leaveSession,
     sendMessage,
-    sendReaction
+    sendReaction,
+    syncPlayback
   };
 };
