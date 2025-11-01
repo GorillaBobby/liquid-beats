@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
+import defaultCover from "@/assets/default-cover.png";
 
 interface TrackCardProps {
   id?: string;
@@ -127,7 +128,7 @@ export const TrackCard = ({ id, title, artist, cover, audioUrl, onClick, onPlay,
       >
         <div className="relative aspect-square rounded-xl overflow-hidden mb-4 shadow-glass">
           <img
-            src={cover}
+            src={cover || defaultCover}
             alt={title}
             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
           />

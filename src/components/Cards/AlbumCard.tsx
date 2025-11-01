@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import defaultCover from "@/assets/default-cover.png";
 
 interface AlbumCardProps {
   id: string;
@@ -63,7 +64,7 @@ export const AlbumCard = ({ id, title, artist, coverUrl, trackCount, artistId, o
     >
       <div className="relative aspect-square rounded-xl overflow-hidden mb-4 shadow-glass">
         <img
-          src={coverUrl || "https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?w=400&h=400&fit=crop"}
+          src={coverUrl || defaultCover}
           alt={title}
           className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
         />

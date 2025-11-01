@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { UserPlus } from "lucide-react";
 import verifiedNormal from "@/assets/verified-normal.png";
 import verifiedGold from "@/assets/verified-gold.png";
+import defaultCover from "@/assets/default-cover.png";
 
 interface ArtistCardProps {
   name: string;
@@ -21,7 +22,7 @@ export const ArtistCard = ({ name, genre, image, followers, verified, verified_t
     >
       <div className="relative w-32 h-32 mx-auto mb-4">
         <img
-          src={image}
+          src={image || defaultCover}
           alt={name}
           className="w-full h-full object-cover rounded-full shadow-glass transition-transform duration-300 group-hover:scale-110"
         />

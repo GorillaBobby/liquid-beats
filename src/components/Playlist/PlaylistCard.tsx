@@ -1,4 +1,5 @@
 import { Music, Lock } from "lucide-react";
+import defaultCover from "@/assets/default-cover.png";
 
 interface PlaylistCardProps {
   playlist: {
@@ -19,15 +20,11 @@ export const PlaylistCard = ({ playlist, onClick }: PlaylistCardProps) => {
       onClick={onClick}
     >
       <div className="relative aspect-square rounded-xl overflow-hidden mb-4 shadow-glass bg-glass/30 flex items-center justify-center">
-        {playlist.cover_url ? (
-          <img
-            src={playlist.cover_url}
-            alt={playlist.name}
-            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
-          />
-        ) : (
-          <Music className="w-16 h-16 text-muted-foreground" />
-        )}
+        <img
+          src={playlist.cover_url || defaultCover}
+          alt={playlist.name}
+          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+        />
         {!playlist.is_public && (
           <div className="absolute top-2 right-2 bg-glass/80 backdrop-blur-sm rounded-full p-2">
             <Lock className="w-4 h-4 text-foreground" />
