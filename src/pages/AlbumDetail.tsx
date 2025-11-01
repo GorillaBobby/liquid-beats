@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Sidebar } from "@/components/Layout/Sidebar";
 import { useAuth } from "@/hooks/useAuth";
 import { useAudioPlayer } from "@/contexts/AudioPlayerContext";
-import { Play, Disc3, Plus, Share2 } from "lucide-react";
+import { Play, Disc3, Plus, Share2, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { AddToPlaylistDialog } from "@/components/Track/AddToPlaylistDialog";
@@ -153,6 +153,15 @@ export default function AlbumDetail() {
       <Sidebar />
 
       <main className="md:ml-64 p-4 md:p-8">
+        <Button
+          onClick={() => navigate(-1)}
+          variant="ghost"
+          size="icon"
+          className="mb-4 md:hidden"
+        >
+          <ArrowLeft className="w-5 h-5" />
+        </Button>
+        
         <div className="max-w-6xl mx-auto">
           <div className="flex flex-col md:flex-row gap-4 md:gap-8 mb-6 md:mb-8">
             <div className="w-full aspect-square md:w-64 md:h-64 rounded-2xl overflow-hidden shadow-glass flex-shrink-0">
