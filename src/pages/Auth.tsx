@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { Music, Users } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
 export default function Auth() {
   const navigate = useNavigate();
@@ -19,6 +20,9 @@ export default function Auth() {
   const [username, setUsername] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [userType, setUserType] = useState<"artist" | "fan">("fan");
+  const [showUserTypeDialog, setShowUserTypeDialog] = useState(false);
+  const [pendingUserId, setPendingUserId] = useState<string | null>(null);
+  const [selectedUserType, setSelectedUserType] = useState<"artist" | "fan">("fan");
 
   // Handle OAuth redirect and create profile if needed
   useEffect(() => {
@@ -28,28 +32,56 @@ export default function Auth() {
         // Check if profile exists
         const { data: profile } = await supabase
           .from("profiles")
-          .select("id")
+          .select("id, user_type")
           .eq("id", session.user.id)
           .maybeSingle();
 
-        // Create profile if it doesn't exist
+        // If no profile exists, show dialog to choose user type
         if (!profile) {
-          const email = session.user.email || "";
-          const username = email.split("@")[0];
-          
-          await supabase.from("profiles").insert({
-            id: session.user.id,
-            username: username,
-            display_name: session.user.user_metadata?.full_name || username,
-            user_type: "fan",
-          });
+          setPendingUserId(session.user.id);
+          setShowUserTypeDialog(true);
+        } else {
+          // Profile exists, navigate to home
+          navigate("/");
         }
-
-        navigate("/");
       }
     };
     checkSession();
   }, [navigate]);
+
+  const handleUserTypeSelection = async () => {
+    if (!pendingUserId) return;
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) return;
+
+      const email = session.user.email || "";
+      const username = email.split("@")[0];
+
+      const { error } = await supabase.from("profiles").insert({
+        id: pendingUserId,
+        username: username,
+        display_name: session.user.user_metadata?.full_name || username,
+        user_type: selectedUserType,
+      });
+
+      if (error) throw error;
+
+      setShowUserTypeDialog(false);
+      toast({
+        title: "Compte créé !",
+        description: `Bienvenue ${selectedUserType === "artist" ? "artiste" : "fan"} !`,
+      });
+      navigate("/");
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: error.message,
+      });
+    }
+  };
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -272,6 +304,54 @@ export default function Auth() {
           </button>
         </div>
       </Card>
+
+      {/* User Type Selection Dialog for Google OAuth */}
+      <Dialog open={showUserTypeDialog} onOpenChange={setShowUserTypeDialog}>
+        <DialogContent className="bg-glass/95 backdrop-blur-glass border-glass-border">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+              Choisissez votre type de compte
+            </DialogTitle>
+            <DialogDescription className="text-muted-foreground">
+              Quel type de compte souhaitez-vous créer ?
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="grid grid-cols-2 gap-4 py-4">
+            <Button
+              type="button"
+              variant={selectedUserType === "fan" ? "default" : "outline"}
+              className={selectedUserType === "fan" ? "bg-gradient-primary h-32" : "bg-glass/30 border-glass-border h-32"}
+              onClick={() => setSelectedUserType("fan")}
+            >
+              <div className="flex flex-col items-center gap-2">
+                <Users className="w-8 h-8" />
+                <span className="font-semibold">Fan</span>
+                <span className="text-xs opacity-80">Écoutez et découvrez</span>
+              </div>
+            </Button>
+            <Button
+              type="button"
+              variant={selectedUserType === "artist" ? "default" : "outline"}
+              className={selectedUserType === "artist" ? "bg-gradient-primary h-32" : "bg-glass/30 border-glass-border h-32"}
+              onClick={() => setSelectedUserType("artist")}
+            >
+              <div className="flex flex-col items-center gap-2">
+                <Music className="w-8 h-8" />
+                <span className="font-semibold">Artiste</span>
+                <span className="text-xs opacity-80">Partagez votre musique</span>
+              </div>
+            </Button>
+          </div>
+
+          <Button
+            onClick={handleUserTypeSelection}
+            className="w-full bg-gradient-primary hover:shadow-glow transition-all duration-300"
+          >
+            Continuer
+          </Button>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
