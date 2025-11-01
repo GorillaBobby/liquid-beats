@@ -1,10 +1,14 @@
 import { useState } from "react";
-import { Play, Pause, SkipBack, SkipForward, Volume2, Heart, Repeat, Shuffle, FileText } from "lucide-react";
+import { Play, Pause, SkipBack, SkipForward, Volume2, Heart, Repeat, Shuffle, FileText, Users, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { useAudioPlayer } from "@/contexts/AudioPlayerContext";
+import CreateSessionDialog from "@/components/GroupSession/CreateSessionDialog";
+import JoinSessionDialog from "@/components/GroupSession/JoinSessionDialog";
+import GroupSessionPanel from "@/components/GroupSession/GroupSessionPanel";
+import { useGroupSession } from "@/hooks/useGroupSession";
 
 export default function GlobalAudioPlayer() {
   const {
@@ -22,6 +26,9 @@ export default function GlobalAudioPlayer() {
 
   const [isLiked, setIsLiked] = useState(false);
   const [lyricsOpen, setLyricsOpen] = useState(false);
+  const [createSessionOpen, setCreateSessionOpen] = useState(false);
+  const [joinSessionOpen, setJoinSessionOpen] = useState(false);
+  const { currentSession } = useGroupSession();
 
   const formatTime = (time: number) => {
     if (isNaN(time)) return "0:00";
@@ -100,8 +107,41 @@ export default function GlobalAudioPlayer() {
           </div>
         </div>
 
-        {/* Volume & Lyrics */}
-        <div className="items-center gap-3 w-12 md:w-48 hidden md:flex">
+        {/* Volume, Lyrics & Group Session */}
+        <div className="items-center gap-3 w-12 md:w-64 hidden md:flex">
+          {/* Group Session Buttons */}
+          {!currentSession ? (
+            <>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setCreateSessionOpen(true)}
+                className="text-muted-foreground hover:text-primary"
+                title="Créer une session d'écoute"
+              >
+                <Users className="w-5 h-5" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setJoinSessionOpen(true)}
+                className="text-muted-foreground hover:text-primary"
+                title="Rejoindre une session"
+              >
+                <UserPlus className="w-5 h-5" />
+              </Button>
+            </>
+          ) : (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-primary"
+              title="En session d'écoute"
+            >
+              <Users className="w-5 h-5" />
+            </Button>
+          )}
+          
           {currentTrack?.lyrics && (
             <Button
               variant="ghost"
@@ -147,6 +187,20 @@ export default function GlobalAudioPlayer() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Group Session Dialogs */}
+      <CreateSessionDialog
+        open={createSessionOpen}
+        onOpenChange={setCreateSessionOpen}
+        trackId={currentTrack?.id || ""}
+      />
+      <JoinSessionDialog
+        open={joinSessionOpen}
+        onOpenChange={setJoinSessionOpen}
+      />
+      
+      {/* Group Session Panel */}
+      <GroupSessionPanel />
     </div>
   );
 }
