@@ -36,14 +36,25 @@ interface Artist {
   user_type: string;
 }
 
+interface AdminLog {
+  id: string;
+  event_type: string;
+  user_id: string | null;
+  user_email: string | null;
+  username: string | null;
+  details: any;
+  created_at: string;
+}
+
 export default function Admin() {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [artists, setArtists] = useState<Artist[]>([]);
   const [allTracks, setAllTracks] = useState<any[]>([]);
+  const [logs, setLogs] = useState<AdminLog[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [activeTab, setActiveTab] = useState<"artists" | "tracks">("artists");
+  const [activeTab, setActiveTab] = useState<"artists" | "tracks" | "logs">("artists");
   const [loading, setLoading] = useState(true);
   const [codeDialogOpen, setCodeDialogOpen] = useState(true);
   const [code, setCode] = useState("");
@@ -59,6 +70,7 @@ export default function Admin() {
     if (isAuthenticated) {
       loadArtists();
       loadTracks();
+      loadLogs();
     }
   }, [user, authLoading, isAuthenticated]);
 
@@ -112,6 +124,21 @@ export default function Admin() {
     }
   };
 
+  const loadLogs = async () => {
+    try {
+      const { data: logsData, error } = await supabase
+        .from("admin_logs")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(100);
+
+      if (error) throw error;
+      setLogs(logsData || []);
+    } catch (error: any) {
+      toast({ variant: "destructive", title: "Erreur", description: error.message });
+    }
+  };
+
   const toggleVerification = async (artistId: string, currentStatus: boolean, tier: string = "normal") => {
     try {
       const updateData = currentStatus 
@@ -146,6 +173,28 @@ export default function Admin() {
     if (!confirm("Êtes-vous sûr de vouloir supprimer cette musique ?")) return;
 
     try {
+      // Get track info first to delete storage files
+      const track = allTracks.find(t => t.id === trackId);
+      
+      if (track) {
+        // Delete audio file from storage
+        if (track.audio_url) {
+          const audioPath = track.audio_url.split('/').pop();
+          if (audioPath) {
+            await supabase.storage.from('audio-files').remove([audioPath]);
+          }
+        }
+        
+        // Delete cover image from storage
+        if (track.cover_url) {
+          const coverPath = track.cover_url.split('/').pop();
+          if (coverPath) {
+            await supabase.storage.from('cover-images').remove([coverPath]);
+          }
+        }
+      }
+
+      // Delete track from database
       const { error } = await supabase.from("tracks").delete().eq("id", trackId);
 
       if (error) throw error;
@@ -258,16 +307,25 @@ export default function Admin() {
             >
               Musiques
             </Button>
+            <Button
+              variant={activeTab === "logs" ? "default" : "outline"}
+              onClick={() => setActiveTab("logs")}
+              className={activeTab === "logs" ? "bg-gradient-primary" : "bg-glass/30 border-glass-border"}
+            >
+              Logs
+            </Button>
           </div>
 
-          <div className="mb-6">
-            <Input
-              placeholder={activeTab === "artists" ? "Rechercher un artiste..." : "Rechercher une musique..."}
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="bg-glass/30 border-glass-border max-w-md"
-            />
-          </div>
+          {activeTab !== "logs" && (
+            <div className="mb-6">
+              <Input
+                placeholder={activeTab === "artists" ? "Rechercher un artiste..." : "Rechercher une musique..."}
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="bg-glass/30 border-glass-border max-w-md"
+              />
+            </div>
+          )}
 
           {activeTab === "artists" ? (
             <div className="space-y-4">
@@ -337,7 +395,7 @@ export default function Admin() {
                 <p className="text-center text-muted-foreground py-12">Aucun artiste trouvé</p>
               )}
             </div>
-          ) : (
+          ) : activeTab === "tracks" ? (
             <div className="space-y-4">
               {filteredTracks.map((track) => (
                 <div
@@ -374,6 +432,65 @@ export default function Admin() {
               {filteredTracks.length === 0 && (
                 <p className="text-center text-muted-foreground py-12">Aucune musique trouvée</p>
               )}
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="bg-glass/50 backdrop-blur-glass rounded-2xl p-6 border border-glass-border">
+                <h3 className="font-bold text-foreground mb-4">Activités récentes</h3>
+                <div className="space-y-3">
+                  {logs.map((log) => (
+                    <div key={log.id} className="bg-glass/30 rounded-lg p-4 border border-glass-border">
+                      <div className="flex justify-between items-start mb-2">
+                        <span className="font-semibold text-foreground">
+                          {log.event_type === 'new_user' && '👤 Nouveau compte'}
+                          {log.event_type === 'new_track' && '🎵 Nouvelle musique'}
+                          {log.event_type === 'new_album' && '💿 Nouvel album'}
+                          {log.event_type === 'verification_change' && '✓ Certification modifiée'}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          {new Date(log.created_at).toLocaleString('fr-FR')}
+                        </span>
+                      </div>
+                      
+                      {log.event_type === 'new_user' && (
+                        <div className="text-sm text-muted-foreground">
+                          <p>Email: {log.user_email}</p>
+                          <p>Username: {log.details?.username}</p>
+                          <p>Type: {log.details?.user_type === 'artist' ? 'Artiste' : 'Fan'}</p>
+                        </div>
+                      )}
+                      
+                      {log.event_type === 'new_track' && (
+                        <div className="text-sm text-muted-foreground">
+                          <p>Titre: {log.details?.title}</p>
+                        </div>
+                      )}
+                      
+                      {log.event_type === 'new_album' && (
+                        <div className="text-sm text-muted-foreground">
+                          <p>Titre: {log.details?.title}</p>
+                        </div>
+                      )}
+                      
+                      {log.event_type === 'verification_change' && (
+                        <div className="text-sm text-muted-foreground">
+                          <p>Artiste: @{log.username}</p>
+                          <p>
+                            Statut: {log.details?.verified ? 
+                              `Certifié (${log.details?.verified_tier})` : 
+                              'Non certifié'
+                            }
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                  
+                  {logs.length === 0 && (
+                    <p className="text-center text-muted-foreground py-8">Aucune activité récente</p>
+                  )}
+                </div>
+              </div>
             </div>
           )}
         </div>

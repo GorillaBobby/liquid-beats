@@ -9,10 +9,12 @@ import { TrackCard } from "@/components/Cards/TrackCard";
 import { AlbumCard } from "@/components/Cards/AlbumCard";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { Upload, LogOut, MessageCircle, UserPlus, UserMinus, Edit, CheckCircle, Trash2 } from "lucide-react";
+import { Upload, LogOut, MessageCircle, UserPlus, UserMinus, Edit, Trash2 } from "lucide-react";
 import { UploadTrackDialog } from "@/components/Upload/UploadTrackDialog";
 import { EditProfileDialog } from "@/components/Profile/EditProfileDialog";
 import { DeleteAccountDialog } from "@/components/Profile/DeleteAccountDialog";
+import verifiedNormal from "@/assets/verified-normal.png";
+import verifiedGold from "@/assets/verified-gold.png";
 
 interface Profile {
   id: string;
@@ -22,6 +24,7 @@ interface Profile {
   bio: string | null;
   avatar_url: string | null;
   verified: boolean;
+  verified_tier: string | null;
 }
 
 interface Track {
@@ -245,7 +248,11 @@ export default function Profile() {
                   {profile.display_name || profile.username}
                 </h1>
                 {profile.verified && (
-                  <CheckCircle className="w-7 h-7 text-primary fill-primary" />
+                  <img 
+                    src={profile.verified_tier === "gold" ? verifiedGold : verifiedNormal} 
+                    alt="Vérifié" 
+                    className="w-7 h-7" 
+                  />
                 )}
                 <span className="px-3 py-1 rounded-full text-sm bg-gradient-primary text-primary-foreground">
                   {profile.user_type === "artist" ? "Artiste" : "Fan"}
