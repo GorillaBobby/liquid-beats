@@ -30,6 +30,7 @@ export const UploadTrackDialog = ({ open, onOpenChange, onUploadSuccess }: Uploa
   
   // Single track fields
   const [title, setTitle] = useState("");
+  const [artistName, setArtistName] = useState("");
   const [description, setDescription] = useState("");
   const [lyrics, setLyrics] = useState("");
   const [audioFile, setAudioFile] = useState<File | null>(null);
@@ -38,6 +39,7 @@ export const UploadTrackDialog = ({ open, onOpenChange, onUploadSuccess }: Uploa
   
   // Album fields
   const [albumTitle, setAlbumTitle] = useState("");
+  const [albumArtistName, setAlbumArtistName] = useState("");
   const [albumDescription, setAlbumDescription] = useState("");
   const [albumCoverFile, setAlbumCoverFile] = useState<File | null>(null);
   const [trackFiles, setTrackFiles] = useState<TrackFile[]>([]);
@@ -62,7 +64,7 @@ export const UploadTrackDialog = ({ open, onOpenChange, onUploadSuccess }: Uploa
   };
 
   const handleUploadSingle = async () => {
-    if (!user || !audioFile || !title) {
+    if (!user || !audioFile || !title || !artistName) {
       toast({ variant: "destructive", title: "Veuillez remplir tous les champs requis" });
       return;
     }
@@ -131,7 +133,7 @@ export const UploadTrackDialog = ({ open, onOpenChange, onUploadSuccess }: Uploa
   };
 
   const handleUploadAlbum = async () => {
-    if (!user || !albumTitle || trackFiles.length === 0) {
+    if (!user || !albumTitle || !albumArtistName || trackFiles.length === 0) {
       toast({ variant: "destructive", title: "Veuillez remplir tous les champs requis" });
       return;
     }
@@ -216,12 +218,14 @@ export const UploadTrackDialog = ({ open, onOpenChange, onUploadSuccess }: Uploa
 
   const resetForm = () => {
     setTitle("");
+    setArtistName("");
     setDescription("");
     setAudioFile(null);
     setCoverFile(null);
     setLyrics("");
     setDownloadable(false);
     setAlbumTitle("");
+    setAlbumArtistName("");
     setAlbumDescription("");
     setAlbumCoverFile(null);
     setTrackFiles([]);
@@ -260,6 +264,17 @@ export const UploadTrackDialog = ({ open, onOpenChange, onUploadSuccess }: Uploa
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="Titre de la musique"
+                  className="bg-glass/30 border-glass-border"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="artistName">Nom de l'artiste *</Label>
+                <Input
+                  id="artistName"
+                  value={artistName}
+                  onChange={(e) => setArtistName(e.target.value)}
+                  placeholder="Nom de l'artiste"
                   className="bg-glass/30 border-glass-border"
                 />
               </div>
@@ -325,7 +340,7 @@ export const UploadTrackDialog = ({ open, onOpenChange, onUploadSuccess }: Uploa
 
               <Button
                 onClick={handleUploadSingle}
-                disabled={uploading || !audioFile || !title}
+                disabled={uploading || !audioFile || !title || !artistName}
                 className="w-full bg-gradient-primary hover:shadow-glow transition-all duration-300"
               >
                 <Upload className="w-4 h-4 mr-2" />
@@ -341,6 +356,17 @@ export const UploadTrackDialog = ({ open, onOpenChange, onUploadSuccess }: Uploa
                   value={albumTitle}
                   onChange={(e) => setAlbumTitle(e.target.value)}
                   placeholder="Titre de l'album"
+                  className="bg-glass/30 border-glass-border"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="albumArtistName">Nom de l'artiste *</Label>
+                <Input
+                  id="albumArtistName"
+                  value={albumArtistName}
+                  onChange={(e) => setAlbumArtistName(e.target.value)}
+                  placeholder="Nom de l'artiste"
                   className="bg-glass/30 border-glass-border"
                 />
               </div>
@@ -419,7 +445,7 @@ export const UploadTrackDialog = ({ open, onOpenChange, onUploadSuccess }: Uploa
 
               <Button
                 onClick={handleUploadAlbum}
-                disabled={uploading || !albumTitle || trackFiles.length === 0}
+                disabled={uploading || !albumTitle || !albumArtistName || trackFiles.length === 0}
                 className="w-full bg-gradient-primary hover:shadow-glow transition-all duration-300"
               >
                 <Upload className="w-4 h-4 mr-2" />
