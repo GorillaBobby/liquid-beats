@@ -187,6 +187,38 @@ export type Database = {
           },
         ]
       }
+      listening_history: {
+        Row: {
+          created_at: string
+          id: string
+          played_at: string
+          track_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          played_at?: string
+          track_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          played_at?: string
+          track_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "listening_history_track_id_fkey"
+            columns: ["track_id"]
+            isOneToOne: false
+            referencedRelation: "tracks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       listening_sessions: {
         Row: {
           created_at: string | null
