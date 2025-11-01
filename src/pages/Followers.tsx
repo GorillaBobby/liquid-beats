@@ -5,7 +5,7 @@ import { Sidebar } from "@/components/Layout/Sidebar";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import { UserPlus, UserMinus, CheckCircle } from "lucide-react";
+import { UserPlus, UserMinus, CheckCircle, ArrowLeft } from "lucide-react";
 
 interface User {
   id: string;
@@ -112,7 +112,16 @@ export default function Followers() {
     <div className="min-h-screen bg-background">
       <Sidebar />
       
-      <main className="ml-64 p-8">
+      <main className="md:ml-64 p-4 md:p-8">
+        <Button
+          onClick={() => navigate(-1)}
+          variant="ghost"
+          size="icon"
+          className="mb-4 md:hidden"
+        >
+          <ArrowLeft className="w-5 h-5" />
+        </Button>
+        
         <div className="max-w-4xl mx-auto">
           <h1 className="text-3xl font-bold text-foreground mb-8">Abonnés de @{username}</h1>
           

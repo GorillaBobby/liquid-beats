@@ -7,7 +7,7 @@ import { BottomNav } from "@/components/Layout/BottomNav";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, ArrowLeft } from "lucide-react";
 import { CreatePlaylistDialog } from "@/components/Playlist/CreatePlaylistDialog";
 import { PlaylistCard } from "@/components/Playlist/PlaylistCard";
 
@@ -85,6 +85,15 @@ export default function Playlists() {
       <BottomNav />
 
       <main className="md:ml-64 p-4 md:p-8 pb-24 md:pb-8 pt-20 md:pt-8">
+        <Button
+          onClick={() => navigate(-1)}
+          variant="ghost"
+          size="icon"
+          className="mb-4 md:hidden"
+        >
+          <ArrowLeft className="w-5 h-5" />
+        </Button>
+        
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-4xl font-bold text-foreground mb-2">Mes Playlists</h1>

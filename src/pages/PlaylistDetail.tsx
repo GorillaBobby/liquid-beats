@@ -6,7 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useAudioPlayer } from "@/contexts/AudioPlayerContext";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import { Play, Trash2, Shuffle } from "lucide-react";
+import { Play, Trash2, Shuffle, ArrowLeft } from "lucide-react";
 import { TrackCard } from "@/components/Cards/TrackCard";
 
 interface Track {
@@ -131,10 +131,19 @@ export default function PlaylistDetail() {
   const isOwner = user?.id === playlist.user_id;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-24 md:pb-8">
       <Sidebar />
 
-      <main className="ml-64 p-8 pb-32">
+      <main className="md:ml-64 p-4 md:p-8">
+        <Button
+          onClick={() => navigate(-1)}
+          variant="ghost"
+          size="icon"
+          className="mb-4 md:hidden"
+        >
+          <ArrowLeft className="w-5 h-5" />
+        </Button>
+        
         <div className="max-w-6xl mx-auto">
           <div className="flex gap-8 mb-8">
             <img

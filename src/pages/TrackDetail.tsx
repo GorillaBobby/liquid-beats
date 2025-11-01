@@ -142,6 +142,15 @@ export default function TrackDetail() {
         <Button
           onClick={() => navigate(-1)}
           variant="ghost"
+          size="icon"
+          className="mb-4 md:hidden"
+        >
+          <ArrowLeft className="w-5 h-5" />
+        </Button>
+        
+        <Button
+          onClick={() => navigate(-1)}
+          variant="ghost"
           className="mb-6"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />

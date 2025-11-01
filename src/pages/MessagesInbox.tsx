@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Sidebar } from "@/components/Layout/Sidebar";
 import { useAuth } from "@/hooks/useAuth";
-import { MessageCircle } from "lucide-react";
+import { MessageCircle, ArrowLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface Conversation {
   user_id: string;
@@ -97,7 +98,16 @@ export default function MessagesInbox() {
     <div className="min-h-screen bg-background">
       <Sidebar />
 
-      <main className="ml-64 p-8">
+      <main className="md:ml-64 p-4 md:p-8 pb-32">
+        <Button
+          onClick={() => navigate(-1)}
+          variant="ghost"
+          size="icon"
+          className="mb-4 md:hidden"
+        >
+          <ArrowLeft className="w-5 h-5" />
+        </Button>
+        
         <div className="max-w-4xl mx-auto">
           <div className="mb-8">
             <h1 className="text-4xl font-bold text-foreground mb-2 flex items-center gap-3">

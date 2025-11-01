@@ -8,7 +8,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { useAudioPlayer } from "@/contexts/AudioPlayerContext";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search as SearchIcon } from "lucide-react";
+import { Search as SearchIcon, ArrowLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { ArtistCard } from "@/components/Cards/ArtistCard";
 import { TrackCard } from "@/components/Cards/TrackCard";
 
@@ -199,6 +200,15 @@ export default function Search() {
       <BottomNav />
 
       <main className="md:ml-64 p-4 md:p-8 pb-24 md:pb-32 pt-20 md:pt-8">
+        <Button
+          onClick={() => navigate(-1)}
+          variant="ghost"
+          size="icon"
+          className="mb-4 md:hidden"
+        >
+          <ArrowLeft className="w-5 h-5" />
+        </Button>
+        
         <div className="max-w-6xl mx-auto">
           <h1 className="text-4xl font-bold text-foreground mb-2">Rechercher</h1>
           <p className="text-muted-foreground mb-8">Trouvez vos artistes et musiques préférés</p>

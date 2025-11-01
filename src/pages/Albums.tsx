@@ -5,7 +5,8 @@ import { Sidebar } from "@/components/Layout/Sidebar";
 import { MobileNav } from "@/components/Layout/MobileNav";
 import { BottomNav } from "@/components/Layout/BottomNav";
 import { useAuth } from "@/hooks/useAuth";
-import { Disc3 } from "lucide-react";
+import { Disc3, ArrowLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface Album {
   id: string;
@@ -59,6 +60,15 @@ export default function Albums() {
       <BottomNav />
 
       <main className="md:ml-64 p-4 md:p-8 pb-24 md:pb-8 pt-20 md:pt-8">
+        <Button
+          onClick={() => navigate(-1)}
+          variant="ghost"
+          size="icon"
+          className="mb-4 md:hidden"
+        >
+          <ArrowLeft className="w-5 h-5" />
+        </Button>
+        
         <div className="max-w-7xl mx-auto">
           <div className="mb-8">
             <h1 className="text-4xl font-bold text-foreground mb-2 flex items-center gap-3">

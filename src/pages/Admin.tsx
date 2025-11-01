@@ -7,7 +7,7 @@ import { BottomNav } from "@/components/Layout/BottomNav";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import { Badge, XCircle, Shield, Trash2, Users, MessageSquare } from "lucide-react";
+import { Badge, XCircle, Shield, Trash2, Users, MessageSquare, ArrowLeft } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
   Dialog,
@@ -407,6 +407,15 @@ export default function Admin() {
       {isAuthenticated && (
 
       <main className="md:ml-64 p-4 md:p-8 pb-24 md:pb-8 pt-20 md:pt-8">
+        <Button
+          onClick={() => navigate(-1)}
+          variant="ghost"
+          size="icon"
+          className="mb-4 md:hidden"
+        >
+          <ArrowLeft className="w-5 h-5" />
+        </Button>
+        
         <div className="max-w-6xl mx-auto">
           <div className="mb-6 md:mb-8">
             <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2 flex items-center gap-3">

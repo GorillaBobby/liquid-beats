@@ -8,6 +8,8 @@ import { TrackCard } from "@/components/Cards/TrackCard";
 import { useAuth } from "@/hooks/useAuth";
 import { useAudioPlayer } from "@/contexts/AudioPlayerContext";
 import { useToast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
 
 interface Track {
   id: string;
@@ -118,7 +120,16 @@ export default function Feed() {
       <BottomNav />
 
       <main className="md:ml-64 pb-24 md:pb-32 p-4 md:p-8 pt-20 md:pt-8">
-          <section>
+        <Button
+          onClick={() => navigate(-1)}
+          variant="ghost"
+          size="icon"
+          className="mb-4 md:hidden"
+        >
+          <ArrowLeft className="w-5 h-5" />
+        </Button>
+        
+        <section>
           <h1 className="text-4xl font-bold text-foreground mb-2">Votre fil d'actualité</h1>
           <p className="text-muted-foreground mb-8">
             {tracks.length > 0 && followingIds.length > 0

@@ -10,7 +10,7 @@ import { TrackCard } from "@/components/Cards/TrackCard";
 import { AlbumCard } from "@/components/Cards/AlbumCard";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { Upload, LogOut, MessageCircle, UserPlus, UserMinus, Edit, Trash2 } from "lucide-react";
+import { Upload, LogOut, MessageCircle, UserPlus, UserMinus, Edit, Trash2, ArrowLeft } from "lucide-react";
 import { UploadTrackDialog } from "@/components/Upload/UploadTrackDialog";
 import { EditProfileDialog } from "@/components/Profile/EditProfileDialog";
 import { DeleteAccountDialog } from "@/components/Profile/DeleteAccountDialog";
@@ -235,6 +235,15 @@ export default function Profile() {
       <BottomNav />
       
       <main className="md:ml-64 pb-24 md:pb-32 p-4 md:p-8 pt-20 md:pt-8">
+        <Button
+          onClick={() => navigate(-1)}
+          variant="ghost"
+          size="icon"
+          className="mb-4 md:hidden"
+        >
+          <ArrowLeft className="w-5 h-5" />
+        </Button>
+        
         {/* Header Profile */}
         <div className="bg-glass/50 backdrop-blur-glass rounded-2xl md:rounded-3xl p-4 md:p-8 border border-glass-border mb-6 md:mb-8 shadow-glass">
           <div className="flex flex-col md:flex-row items-start gap-4 md:gap-6">

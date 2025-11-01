@@ -7,7 +7,8 @@ import { BottomNav } from "@/components/Layout/BottomNav";
 import { TrackCard } from "@/components/Cards/TrackCard";
 import { useAuth } from "@/hooks/useAuth";
 import { useAudioPlayer } from "@/contexts/AudioPlayerContext";
-import { TrendingUp } from "lucide-react";
+import { TrendingUp, ArrowLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface Track {
   id: string;
@@ -118,6 +119,15 @@ export default function Trending() {
       <BottomNav />
 
       <main className="md:ml-64 pb-24 md:pb-48 p-4 md:p-8 pt-20 md:pt-8">
+        <Button
+          onClick={() => navigate(-1)}
+          variant="ghost"
+          size="icon"
+          className="mb-4 md:hidden"
+        >
+          <ArrowLeft className="w-5 h-5" />
+        </Button>
+        
         <section>
           <div className="flex items-center gap-3 mb-8">
             <TrendingUp className="w-8 h-8 text-primary" />
