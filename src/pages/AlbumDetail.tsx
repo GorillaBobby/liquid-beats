@@ -149,13 +149,13 @@ export default function AlbumDetail() {
   if (!album) return null;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-24 md:pb-8">
       <Sidebar />
 
-      <main className="ml-64 p-8">
+      <main className="md:ml-64 p-4 md:p-8">
         <div className="max-w-6xl mx-auto">
-          <div className="flex gap-8 mb-8">
-            <div className="w-64 h-64 rounded-2xl overflow-hidden shadow-glass flex-shrink-0">
+          <div className="flex flex-col md:flex-row gap-4 md:gap-8 mb-6 md:mb-8">
+            <div className="w-full aspect-square md:w-64 md:h-64 rounded-2xl overflow-hidden shadow-glass flex-shrink-0">
               <img
                 src={album.cover_url || "https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?w=400&h=400&fit=crop"}
                 alt={album.title}
@@ -164,13 +164,13 @@ export default function AlbumDetail() {
             </div>
 
             <div className="flex-1 flex flex-col justify-end">
-              <p className="text-sm text-muted-foreground mb-2">ALBUM</p>
-              <h1 className="text-5xl font-bold text-foreground mb-4">{album.title}</h1>
-              <div className="flex items-center gap-2 text-muted-foreground mb-4">
+              <p className="text-xs md:text-sm text-muted-foreground mb-2">ALBUM</p>
+              <h1 className="text-3xl md:text-5xl font-bold text-foreground mb-3 md:mb-4">{album.title}</h1>
+              <div className="flex items-center gap-2 text-sm md:text-base text-muted-foreground mb-3 md:mb-4 flex-wrap">
                 <img
                   src={album.artist.avatar_url || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&h=200&fit=crop"}
                   alt={album.artist.display_name || album.artist.username}
-                  className="w-6 h-6 rounded-full"
+                  className="w-5 h-5 md:w-6 md:h-6 rounded-full"
                 />
                 <span
                   onClick={() => navigate(`/profile/${album.artist.username}`)}
@@ -188,38 +188,39 @@ export default function AlbumDetail() {
                 <span>{tracks.length} titres</span>
               </div>
               {album.description && (
-                <p className="text-muted-foreground mb-4">{album.description}</p>
+                <p className="text-sm md:text-base text-muted-foreground mb-4 line-clamp-3 md:line-clamp-none">{album.description}</p>
               )}
-              <div className="flex gap-3">
+              <div className="flex gap-2 md:gap-3 flex-wrap">
                 <Button
                   onClick={playAlbum}
                   size="lg"
-                  className="bg-gradient-primary hover:shadow-glow transition-all duration-300"
+                  className="bg-gradient-primary hover:shadow-glow transition-all duration-300 flex-1 md:flex-none"
                 >
-                  <Play className="w-5 h-5 mr-2" />
-                  Lire l'album
+                  <Play className="w-4 h-4 md:w-5 md:h-5 mr-2" />
+                  <span className="text-sm md:text-base">Lire</span>
                 </Button>
                 <Button
                   onClick={handleShareAlbum}
                   size="lg"
                   variant="secondary"
+                  className="flex-1 md:flex-none"
                 >
-                  <Share2 className="w-5 h-5 mr-2" />
-                  Partager
+                  <Share2 className="w-4 h-4 md:w-5 md:h-5 mr-2" />
+                  <span className="text-sm md:text-base">Partager</span>
                 </Button>
               </div>
             </div>
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-1 md:space-y-2">
             {tracks.map((track, index) => (
               <div
                 key={track.id}
-                className="flex items-center gap-4 p-4 rounded-xl bg-glass/30 hover:bg-glass/50 transition-all group"
+                className="flex items-center gap-2 md:gap-4 p-3 md:p-4 rounded-xl bg-glass/30 hover:bg-glass/50 transition-all group"
               >
-                <span className="text-muted-foreground w-8">{index + 1}</span>
+                <span className="text-muted-foreground w-6 md:w-8 text-sm md:text-base">{index + 1}</span>
                 <div
-                  className="flex-1 cursor-pointer"
+                  className="flex-1 cursor-pointer min-w-0"
                   onClick={() => {
                     const playlist = tracks.map(t => ({
                       id: t.id,
@@ -232,31 +233,33 @@ export default function AlbumDetail() {
                     setPlaylist(playlist, index);
                   }}
                 >
-                  <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors">
+                  <h3 className="font-semibold text-sm md:text-base text-foreground group-hover:text-primary transition-colors truncate">
                     {track.title}
                   </h3>
                 </div>
-                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="flex gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                   <Button
                     variant="ghost"
                     size="icon"
+                    className="h-8 w-8 md:h-10 md:w-10"
                     onClick={(e) => {
                       e.stopPropagation();
                       handleShareTrack(track.id, track.title);
                     }}
                   >
-                    <Share2 className="w-5 h-5" />
+                    <Share2 className="w-4 h-4 md:w-5 md:h-5" />
                   </Button>
                   <Button
                     variant="ghost"
                     size="icon"
+                    className="h-8 w-8 md:h-10 md:w-10"
                     onClick={(e) => {
                       e.stopPropagation();
                       setSelectedTrackId(track.id);
                       setAddToPlaylistOpen(true);
                     }}
                   >
-                    <Plus className="w-5 h-5" />
+                    <Plus className="w-4 h-4 md:w-5 md:h-5" />
                   </Button>
                 </div>
               </div>
@@ -270,9 +273,9 @@ export default function AlbumDetail() {
           />
 
           {tracks.length === 0 && (
-            <div className="text-center py-24">
-              <Disc3 className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-              <p className="text-muted-foreground text-lg">Cet album ne contient aucun titre</p>
+            <div className="text-center py-16 md:py-24">
+              <Disc3 className="w-12 h-12 md:w-16 md:h-16 mx-auto mb-4 text-muted-foreground" />
+              <p className="text-muted-foreground text-base md:text-lg">Cet album ne contient aucun titre</p>
             </div>
           )}
         </div>
