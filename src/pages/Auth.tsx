@@ -20,11 +20,31 @@ export default function Auth() {
   const [displayName, setDisplayName] = useState("");
   const [userType, setUserType] = useState<"artist" | "fan">("fan");
 
-  // Handle OAuth redirect
+  // Handle OAuth redirect and create profile if needed
   useEffect(() => {
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
+      if (session?.user) {
+        // Check if profile exists
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("id")
+          .eq("id", session.user.id)
+          .maybeSingle();
+
+        // Create profile if it doesn't exist
+        if (!profile) {
+          const email = session.user.email || "";
+          const username = email.split("@")[0];
+          
+          await supabase.from("profiles").insert({
+            id: session.user.id,
+            username: username,
+            display_name: session.user.user_metadata?.full_name || username,
+            user_type: "fan",
+          });
+        }
+
         navigate("/");
       }
     };
