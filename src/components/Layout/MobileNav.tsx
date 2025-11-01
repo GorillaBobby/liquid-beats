@@ -77,7 +77,7 @@ export const MobileNav = () => {
       
       <Drawer open={open} onOpenChange={setOpen}>
         <DrawerTrigger asChild>
-          <Button variant="ghost" size="icon">
+          <Button variant="ghost" size="icon" className="self-start mt-4">
             <Menu className="h-6 w-6" />
           </Button>
         </DrawerTrigger>
