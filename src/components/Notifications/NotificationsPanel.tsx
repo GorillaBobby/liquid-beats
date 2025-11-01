@@ -63,7 +63,7 @@ export const NotificationsPanel = () => {
         onClick={() => setIsOpen(true)}
         variant="ghost"
         size="icon"
-        className="fixed top-4 right-16 md:right-4 z-50 bg-glass/50 backdrop-blur-glass border border-glass-border"
+        className="fixed top-10 right-16 md:right-4 z-50 bg-glass/50 backdrop-blur-glass border border-glass-border"
       >
         <Bell className="w-5 h-5" />
         {unreadCount > 0 && (
