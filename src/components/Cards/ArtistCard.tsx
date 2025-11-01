@@ -45,7 +45,7 @@ export const ArtistCard = ({ name, genre, image, followers, verified, verified_t
       <Button
         variant="outline"
         size="sm"
-        className="w-full bg-glass/30 border-glass-border hover:bg-gradient-primary hover:border-primary hover:text-primary-foreground transition-all duration-300"
+        className="w-full h-9 bg-glass/30 border-glass-border hover:bg-gradient-primary hover:border-primary hover:text-primary-foreground transition-all duration-300"
       >
         <UserPlus className="w-4 h-4 mr-2" />
         Suivre
