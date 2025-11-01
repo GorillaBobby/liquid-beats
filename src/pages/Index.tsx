@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Sidebar } from "@/components/Layout/Sidebar";
 import { MobileNav } from "@/components/Layout/MobileNav";
+import { BottomNav } from "@/components/Layout/BottomNav";
 import { TrackCard } from "@/components/Cards/TrackCard";
 import { AlbumCard } from "@/components/Cards/AlbumCard";
 import { ArtistCard } from "@/components/Cards/ArtistCard";
@@ -192,8 +193,9 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <MobileNav />
       <Sidebar />
+      <BottomNav />
       
-      <main className="md:ml-64 pb-32 p-4 md:p-8 pt-20 md:pt-8">
+      <main className="md:ml-64 pb-24 md:pb-32 p-4 md:p-8 pt-20 md:pt-8">
         {/* Hero Section */}
         <section className="relative h-48 md:h-96 rounded-2xl md:rounded-3xl overflow-hidden mb-8 md:mb-12 shadow-glass">
           <img

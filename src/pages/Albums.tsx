@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Sidebar } from "@/components/Layout/Sidebar";
+import { MobileNav } from "@/components/Layout/MobileNav";
+import { BottomNav } from "@/components/Layout/BottomNav";
 import { useAuth } from "@/hooks/useAuth";
 import { Disc3 } from "lucide-react";
 
@@ -52,9 +54,11 @@ export default function Albums() {
 
   return (
     <div className="min-h-screen bg-background">
+      <MobileNav />
       <Sidebar />
+      <BottomNav />
 
-      <main className="ml-64 p-8">
+      <main className="md:ml-64 p-4 md:p-8 pb-24 md:pb-8 pt-20 md:pt-8">
         <div className="max-w-7xl mx-auto">
           <div className="mb-8">
             <h1 className="text-4xl font-bold text-foreground mb-2 flex items-center gap-3">

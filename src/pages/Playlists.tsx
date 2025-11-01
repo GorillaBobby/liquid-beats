@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Sidebar } from "@/components/Layout/Sidebar";
+import { MobileNav } from "@/components/Layout/MobileNav";
+import { BottomNav } from "@/components/Layout/BottomNav";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
@@ -78,9 +80,11 @@ export default function Playlists() {
 
   return (
     <div className="min-h-screen bg-background">
+      <MobileNav />
       <Sidebar />
+      <BottomNav />
 
-      <main className="ml-64 p-8">
+      <main className="md:ml-64 p-4 md:p-8 pb-24 md:pb-8 pt-20 md:pt-8">
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-4xl font-bold text-foreground mb-2">Mes Playlists</h1>
@@ -96,7 +100,7 @@ export default function Playlists() {
         </div>
 
         {playlists.length > 0 ? (
-          <div className="grid grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
             {playlists.map((playlist) => (
               <PlaylistCard
                 key={playlist.id}

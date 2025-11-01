@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Sidebar } from "@/components/Layout/Sidebar";
+import { MobileNav } from "@/components/Layout/MobileNav";
+import { BottomNav } from "@/components/Layout/BottomNav";
 import { useAuth } from "@/hooks/useAuth";
 import { useAudioPlayer } from "@/contexts/AudioPlayerContext";
 import { Input } from "@/components/ui/input";
@@ -192,9 +194,11 @@ export default function Search() {
 
   return (
     <div className="min-h-screen bg-background">
+      <MobileNav />
       <Sidebar />
+      <BottomNav />
 
-      <main className="ml-64 p-8 pb-32">
+      <main className="md:ml-64 p-4 md:p-8 pb-24 md:pb-32 pt-20 md:pt-8">
         <div className="max-w-6xl mx-auto">
           <h1 className="text-4xl font-bold text-foreground mb-2">Rechercher</h1>
           <p className="text-muted-foreground mb-8">Trouvez vos artistes et musiques préférés</p>
@@ -221,7 +225,7 @@ export default function Search() {
                   <p className="text-muted-foreground">Recherche en cours...</p>
                 </div>
               ) : artists.length > 0 ? (
-                <div className="grid grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
                   {artists.map((artist) => (
                     <ArtistCard
                       key={artist.id}
@@ -245,7 +249,7 @@ export default function Search() {
                   <p className="text-muted-foreground">Recherche en cours...</p>
                 </div>
               ) : tracks.length > 0 ? (
-                <div className="grid grid-cols-4 gap-6">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
                   {tracks.map((track, index) => (
                     <TrackCard
                       key={track.id}

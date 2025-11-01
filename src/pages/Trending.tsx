@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Sidebar } from "@/components/Layout/Sidebar";
+import { MobileNav } from "@/components/Layout/MobileNav";
+import { BottomNav } from "@/components/Layout/BottomNav";
 import { TrackCard } from "@/components/Cards/TrackCard";
 import { useAuth } from "@/hooks/useAuth";
 import { useAudioPlayer } from "@/contexts/AudioPlayerContext";
@@ -111,9 +113,11 @@ export default function Trending() {
 
   return (
     <div className="min-h-screen bg-background">
+      <MobileNav />
       <Sidebar />
+      <BottomNav />
 
-      <main className="ml-64 pb-48 p-8">
+      <main className="md:ml-64 pb-24 md:pb-48 p-4 md:p-8 pt-20 md:pt-8">
         <section>
           <div className="flex items-center gap-3 mb-8">
             <TrendingUp className="w-8 h-8 text-primary" />
@@ -124,7 +128,7 @@ export default function Trending() {
           </div>
 
           {tracks.length > 0 ? (
-            <div className="grid grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
               {tracks.map((track, index) => (
                 <div key={track.id} className="relative">
                   <div className="absolute -top-2 -left-2 z-10 w-8 h-8 bg-gradient-primary rounded-full flex items-center justify-center font-bold text-primary-foreground shadow-glow">

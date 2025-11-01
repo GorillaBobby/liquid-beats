@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Sidebar } from "@/components/Layout/Sidebar";
 import { MobileNav } from "@/components/Layout/MobileNav";
+import { BottomNav } from "@/components/Layout/BottomNav";
 import { AudioPlayer } from "@/components/Player/AudioPlayer";
 import { Button } from "@/components/ui/button";
 import { TrackCard } from "@/components/Cards/TrackCard";
@@ -231,20 +232,21 @@ export default function Profile() {
     <div className="min-h-screen bg-background">
       <MobileNav />
       <Sidebar />
+      <BottomNav />
       
-      <main className="md:ml-64 pb-32 p-4 md:p-8 pt-20 md:pt-8">
+      <main className="md:ml-64 pb-24 md:pb-32 p-4 md:p-8 pt-20 md:pt-8">
         {/* Header Profile */}
-        <div className="bg-glass/50 backdrop-blur-glass rounded-3xl p-8 border border-glass-border mb-8 shadow-glass">
-          <div className="flex items-start gap-6">
+        <div className="bg-glass/50 backdrop-blur-glass rounded-2xl md:rounded-3xl p-4 md:p-8 border border-glass-border mb-6 md:mb-8 shadow-glass">
+          <div className="flex flex-col md:flex-row items-start gap-4 md:gap-6">
             <img
               src={profile.avatar_url || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&h=200&fit=crop"}
               alt={profile.display_name || profile.username}
-              className="w-32 h-32 rounded-full object-cover shadow-glass"
+              className="w-24 h-24 md:w-32 md:h-32 rounded-full object-cover shadow-glass"
             />
             
-            <div className="flex-1">
-              <div className="flex items-center gap-4 mb-2">
-                <h1 className="text-3xl font-bold text-foreground">
+            <div className="flex-1 w-full">
+              <div className="flex flex-wrap items-center gap-2 md:gap-4 mb-2">
+                <h1 className="text-2xl md:text-3xl font-bold text-foreground">
                   {profile.display_name || profile.username}
                 </h1>
                 {profile.verified && (
@@ -279,7 +281,7 @@ export default function Profile() {
                 </button>
               </div>
 
-              <div className="flex gap-3">
+              <div className="flex flex-wrap gap-2 md:gap-3">
                 {isOwnProfile ? (
                   <>
                     <Button
