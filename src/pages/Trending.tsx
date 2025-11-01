@@ -36,6 +36,36 @@ export default function Trending() {
     }
   }, [user, authLoading]);
 
+  // Real-time updates for play counts
+  useEffect(() => {
+    if (!user) return;
+
+    const channel = supabase
+      .channel('tracks-plays-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'tracks'
+        },
+        (payload) => {
+          setTracks((currentTracks) => 
+            currentTracks.map((track) => 
+              track.id === payload.new.id 
+                ? { ...track, plays_count: payload.new.plays_count }
+                : track
+            )
+          );
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user]);
+
   const loadTrending = async () => {
     try {
       setLoading(true);

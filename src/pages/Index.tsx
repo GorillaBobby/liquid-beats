@@ -173,6 +173,11 @@ const Index = () => {
 
   const handleTrackSelect = (index: number) => {
     setPlaylist(tracks, index);
+    
+    // Increment play count
+    if (tracks[index]?.id) {
+      supabase.rpc("increment_track_plays", { track_id: tracks[index].id });
+    }
   };
 
   if (authLoading) {
