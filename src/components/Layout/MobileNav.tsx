@@ -70,17 +70,18 @@ export const MobileNav = () => {
   });
 
   return (
-    <header className="md:hidden fixed top-0 left-0 right-0 h-16 bg-glass/50 backdrop-blur-glass border-b border-glass-border z-50 flex items-center justify-between px-4">
-      <h1 className="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-        LiquidBeats
-      </h1>
-      
-      <Drawer open={open} onOpenChange={setOpen}>
-        <DrawerTrigger asChild>
-          <Button variant="ghost" size="icon" className="self-start mt-4">
-            <Menu className="h-6 w-6" />
-          </Button>
-        </DrawerTrigger>
+    <header className="md:hidden fixed top-0 left-0 right-0 bg-glass/50 backdrop-blur-glass border-b border-glass-border z-50 pt-8 pb-2">
+      <div className="flex items-center justify-between px-4">
+        <h1 className="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+          LiquidBeats
+        </h1>
+        
+        <Drawer open={open} onOpenChange={setOpen}>
+          <DrawerTrigger asChild>
+            <Button variant="ghost" size="icon">
+              <Menu className="h-6 w-6" />
+            </Button>
+          </DrawerTrigger>
         <DrawerContent>
           <DrawerHeader>
             <DrawerTitle className="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">
@@ -115,6 +116,7 @@ export const MobileNav = () => {
           </nav>
         </DrawerContent>
       </Drawer>
+      </div>
     </header>
   );
 };
