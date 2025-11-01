@@ -30,7 +30,7 @@ interface GroupSession {
   track_id: string;
   session_code: string;
   is_active: boolean;
-  current_time: number;
+  playback_time: number;
   is_playing: boolean;
   tracks?: {
     title: string;
@@ -157,7 +157,7 @@ export const useGroupSession = () => {
         });
         
         // Sync to current time
-        setTimeout(() => seek(session.current_time), 500);
+        setTimeout(() => seek(session.playback_time), 500);
       }
 
       toast({
@@ -259,7 +259,7 @@ export const useGroupSession = () => {
       await supabase
         .from('listening_sessions' as any)
         .update({
-          current_time: currentTime,
+          playback_time: currentTime,
           is_playing: isPlaying,
           updated_at: new Date().toISOString()
         })
@@ -296,8 +296,8 @@ export const useGroupSession = () => {
             const updated = payload.new as GroupSession;
             
             // Sync playback for participants
-            if (Math.abs(updated.current_time - currentTime) > 2) {
-              seek(updated.current_time);
+            if (Math.abs(updated.playback_time - currentTime) > 2) {
+              seek(updated.playback_time);
             }
             
             if (updated.is_playing !== isPlaying) {

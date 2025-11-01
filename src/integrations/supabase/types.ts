@@ -157,6 +157,50 @@ export type Database = {
           },
         ]
       }
+      listening_sessions: {
+        Row: {
+          created_at: string | null
+          host_id: string
+          id: string
+          is_active: boolean | null
+          is_playing: boolean | null
+          playback_time: number | null
+          session_code: string
+          track_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          host_id: string
+          id?: string
+          is_active?: boolean | null
+          is_playing?: boolean | null
+          playback_time?: number | null
+          session_code: string
+          track_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          host_id?: string
+          id?: string
+          is_active?: boolean | null
+          is_playing?: boolean | null
+          playback_time?: number | null
+          session_code?: string
+          track_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "listening_sessions_track_id_fkey"
+            columns: ["track_id"]
+            isOneToOne: false
+            referencedRelation: "tracks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       messages: {
         Row: {
           content: string
@@ -359,6 +403,70 @@ export type Database = {
         }
         Relationships: []
       }
+      session_chat: {
+        Row: {
+          created_at: string | null
+          id: string
+          message: string | null
+          reaction: string | null
+          session_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          message?: string | null
+          reaction?: string | null
+          session_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          message?: string | null
+          reaction?: string | null
+          session_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_chat_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "listening_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      session_participants: {
+        Row: {
+          created_at: string | null
+          id: string
+          session_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          session_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          session_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_participants_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "listening_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tracks: {
         Row: {
           album_id: string | null
@@ -445,6 +553,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      generate_session_code: { Args: never; Returns: string }
       increment_track_plays: { Args: { track_id: string }; Returns: undefined }
       is_admin: { Args: { user_id: string }; Returns: boolean }
     }
