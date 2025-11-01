@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useRef, ReactNode, useEffect } from "react";
+import { createContext, useContext, useState, useRef, ReactNode } from "react";
 
 interface Track {
   id: string;
@@ -17,8 +17,6 @@ interface AudioPlayerContextType {
   volume: number;
   playlist: Track[];
   currentIndex: number;
-  eqGains: Record<number, number>;
-  masterGain: number;
   setCurrentTrack: (track: Track) => void;
   setPlaylist: (tracks: Track[], startIndex?: number) => void;
   togglePlay: () => void;
@@ -26,8 +24,6 @@ interface AudioPlayerContextType {
   playPrevious: () => void;
   seek: (time: number) => void;
   setVolume: (volume: number) => void;
-  setEqGain: (frequency: number, gain: number) => void;
-  setMasterGain: (gain: number) => void;
   audioRef: React.RefObject<HTMLAudioElement>;
 }
 
@@ -41,100 +37,14 @@ export const AudioPlayerProvider = ({ children }: { children: ReactNode }) => {
   const [volume, setVolumeState] = useState(75);
   const [playlist, setPlaylistState] = useState<Track[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [eqGains, setEqGains] = useState<Record<number, number>>({
-    100: 0, 200: 0, 400: 0, 800: 0, 1600: 0, 3200: 0, 6400: 0
-  });
-  const [masterGain, setMasterGainState] = useState(0);
-  
   const audioRef = useRef<HTMLAudioElement>(null);
-  const audioContextRef = useRef<AudioContext | null>(null);
-  const sourceNodeRef = useRef<MediaElementAudioSourceNode | null>(null);
-  const filtersRef = useRef<Record<number, BiquadFilterNode>>({});
-  const masterGainNodeRef = useRef<GainNode | null>(null);
-  const volumeGainNodeRef = useRef<GainNode | null>(null);
-  const isAudioInitializedRef = useRef(false);
-
-  // Initialize Web Audio API on first play
-  const initializeAudio = () => {
-    if (isAudioInitializedRef.current || !audioRef.current) return;
-
-    try {
-      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-      audioContextRef.current = audioContext;
-
-      // CRITICAL: Can only create MediaElementSource once per audio element
-      const source = audioContext.createMediaElementSource(audioRef.current);
-      sourceNodeRef.current = source;
-
-      // Create EQ filters for each frequency band
-      const frequencies = [100, 200, 400, 800, 1600, 3200, 6400];
-      let previousNode: AudioNode = source;
-
-      frequencies.forEach((freq) => {
-        const filter = audioContext.createBiquadFilter();
-        filter.type = "peaking";
-        filter.frequency.value = freq;
-        filter.Q.value = 1;
-        filter.gain.value = 0;
-        
-        previousNode.connect(filter);
-        previousNode = filter;
-        filtersRef.current[freq] = filter;
-      });
-
-      // Create volume gain node
-      const volumeGainNode = audioContext.createGain();
-      volumeGainNode.gain.value = volume / 100;
-      volumeGainNodeRef.current = volumeGainNode;
-      previousNode.connect(volumeGainNode);
-      previousNode = volumeGainNode;
-
-      // Create master gain node
-      const masterGainNode = audioContext.createGain();
-      masterGainNode.gain.value = 1;
-      masterGainNodeRef.current = masterGainNode;
-
-      previousNode.connect(masterGainNode);
-      masterGainNode.connect(audioContext.destination);
-
-      isAudioInitializedRef.current = true;
-      
-      console.log("Audio initialized successfully");
-    } catch (error) {
-      console.error("Failed to initialize audio:", error);
-      // If audio graph initialization fails, mark as initialized to prevent retries
-      isAudioInitializedRef.current = true;
-    }
-  };
-
-  // Initialize on mount
-  useEffect(() => {
-    return () => {
-      if (audioContextRef.current) {
-        audioContextRef.current.close();
-      }
-    };
-  }, []);
 
   const setCurrentTrack = (track: Track) => {
     setCurrentTrackState(track);
     if (audioRef.current) {
       audioRef.current.src = track.audioUrl;
       audioRef.current.load();
-      
-      // Initialize audio graph on first interaction if needed
-      if (!isAudioInitializedRef.current) {
-        initializeAudio();
-      }
-      
-      // Resume audio context if suspended
-      if (audioContextRef.current?.state === 'suspended') {
-        audioContextRef.current.resume();
-      }
-      
-      audioRef.current.play()
-        .then(() => setIsPlaying(true))
-        .catch(err => console.error("Play failed:", err));
+      audioRef.current.play().then(() => setIsPlaying(true));
     }
   };
 
@@ -153,19 +63,7 @@ export const AudioPlayerProvider = ({ children }: { children: ReactNode }) => {
       audioRef.current.pause();
       setIsPlaying(false);
     } else {
-      // Initialize audio graph on first interaction if needed
-      if (!isAudioInitializedRef.current) {
-        initializeAudio();
-      }
-      
-      // Resume audio context if suspended
-      if (audioContextRef.current?.state === 'suspended') {
-        audioContextRef.current.resume();
-      }
-      
-      audioRef.current.play()
-        .then(() => setIsPlaying(true))
-        .catch(err => console.error("Play failed:", err));
+      audioRef.current.play().then(() => setIsPlaying(true));
     }
   };
 
@@ -192,26 +90,8 @@ export const AudioPlayerProvider = ({ children }: { children: ReactNode }) => {
 
   const setVolume = (vol: number) => {
     setVolumeState(vol);
-    if (volumeGainNodeRef.current) {
-      volumeGainNodeRef.current.gain.value = vol / 100;
-    } else if (audioRef.current) {
+    if (audioRef.current) {
       audioRef.current.volume = vol / 100;
-    }
-  };
-
-  const setEqGain = (frequency: number, gain: number) => {
-    setEqGains(prev => ({ ...prev, [frequency]: gain }));
-    if (filtersRef.current[frequency]) {
-      filtersRef.current[frequency].gain.value = gain;
-    }
-  };
-
-  const setMasterGain = (gain: number) => {
-    setMasterGainState(gain);
-    if (masterGainNodeRef.current) {
-      // Convert dB to linear gain (approximate)
-      const linearGain = Math.pow(10, gain / 20);
-      masterGainNodeRef.current.gain.value = linearGain;
     }
   };
 
@@ -225,8 +105,6 @@ export const AudioPlayerProvider = ({ children }: { children: ReactNode }) => {
         volume,
         playlist,
         currentIndex,
-        eqGains,
-        masterGain,
         setCurrentTrack,
         setPlaylist,
         togglePlay,
@@ -234,8 +112,6 @@ export const AudioPlayerProvider = ({ children }: { children: ReactNode }) => {
         playPrevious,
         seek,
         setVolume,
-        setEqGain,
-        setMasterGain,
         audioRef,
       }}
     >

@@ -1,11 +1,10 @@
 import { useState } from "react";
-import { Play, Pause, SkipBack, SkipForward, Volume2, Heart, Repeat, Shuffle, FileText, Sliders } from "lucide-react";
+import { Play, Pause, SkipBack, SkipForward, Volume2, Heart, Repeat, Shuffle, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { useAudioPlayer } from "@/contexts/AudioPlayerContext";
-import EqualizerDialog from "./EqualizerDialog";
 
 export default function GlobalAudioPlayer() {
   const {
@@ -23,7 +22,6 @@ export default function GlobalAudioPlayer() {
 
   const [isLiked, setIsLiked] = useState(false);
   const [lyricsOpen, setLyricsOpen] = useState(false);
-  const [eqOpen, setEqOpen] = useState(false);
 
   const formatTime = (time: number) => {
     if (isNaN(time)) return "0:00";
@@ -102,16 +100,8 @@ export default function GlobalAudioPlayer() {
           </div>
         </div>
 
-        {/* Volume, EQ & Lyrics */}
+        {/* Volume & Lyrics */}
         <div className="items-center gap-3 w-12 md:w-48 hidden md:flex">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setEqOpen(true)}
-            className="text-muted-foreground hover:text-foreground"
-          >
-            <Sliders className="w-5 h-5" />
-          </Button>
           {currentTrack?.lyrics && (
             <Button
               variant="ghost"
@@ -131,31 +121,18 @@ export default function GlobalAudioPlayer() {
           />
         </div>
         
-        {/* Mobile EQ & Lyrics Buttons */}
-        <div className="flex gap-1 md:hidden">
+        {/* Mobile Lyrics Button */}
+        {currentTrack?.lyrics && (
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => setEqOpen(true)}
-            className="text-muted-foreground hover:text-foreground"
+            onClick={() => setLyricsOpen(true)}
+            className="text-muted-foreground hover:text-foreground md:hidden"
           >
-            <Sliders className="w-5 h-5" />
+            <FileText className="w-5 h-5" />
           </Button>
-          {currentTrack?.lyrics && (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setLyricsOpen(true)}
-              className="text-muted-foreground hover:text-foreground"
-            >
-              <FileText className="w-5 h-5" />
-            </Button>
-          )}
-        </div>
+        )}
       </div>
-
-      {/* EQ Dialog */}
-      <EqualizerDialog open={eqOpen} onOpenChange={setEqOpen} />
 
       {/* Lyrics Dialog */}
       <Dialog open={lyricsOpen} onOpenChange={setLyricsOpen}>
