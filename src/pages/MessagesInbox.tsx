@@ -98,7 +98,7 @@ export default function MessagesInbox() {
     <div className="min-h-screen bg-background">
       <Sidebar />
 
-      <main className="md:ml-64 p-4 md:p-8 pb-32">
+      <main className="md:ml-64 p-4 md:p-8 pb-40 md:pb-32">
         <Button
           onClick={() => navigate(-1)}
           variant="ghost"

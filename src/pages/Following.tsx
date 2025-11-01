@@ -116,7 +116,7 @@ export default function Following() {
     <div className="min-h-screen bg-background">
       <Sidebar />
       
-      <main className="md:ml-64 p-4 md:p-8">
+      <main className="md:ml-64 p-4 md:p-8 pb-40 md:pb-8">
         <Button
           onClick={() => navigate(-1)}
           variant="ghost"

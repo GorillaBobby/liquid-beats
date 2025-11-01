@@ -234,7 +234,7 @@ export default function Profile() {
       <Sidebar />
       <BottomNav />
       
-      <main className="md:ml-64 pb-24 md:pb-32 p-4 md:p-8 pt-20 md:pt-8">
+      <main className="md:ml-64 pb-40 md:pb-32 p-4 md:p-8 pt-20 md:pt-8">
         <Button
           onClick={() => navigate(-1)}
           variant="ghost"

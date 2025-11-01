@@ -195,7 +195,7 @@ const Index = () => {
       <Sidebar />
       <BottomNav />
       
-      <main className="md:ml-64 pb-24 md:pb-32 p-4 md:p-8 pt-20 md:pt-8">
+      <main className="md:ml-64 pb-40 md:pb-32 p-4 md:p-8 pt-20 md:pt-8">
         {/* Hero Section */}
         <section className="relative h-48 md:h-96 rounded-2xl md:rounded-3xl overflow-hidden mb-8 md:mb-12 shadow-glass">
           <img

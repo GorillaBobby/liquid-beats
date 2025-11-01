@@ -149,7 +149,7 @@ export default function AlbumDetail() {
   if (!album) return null;
 
   return (
-    <div className="min-h-screen bg-background pb-24 md:pb-8">
+    <div className="min-h-screen bg-background pb-40 md:pb-8">
       <Sidebar />
 
       <main className="md:ml-64 p-4 md:p-8">
