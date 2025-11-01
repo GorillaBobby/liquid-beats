@@ -3,6 +3,7 @@ import { Play, Pause, SkipBack, SkipForward, Volume2, Heart, Repeat2, Shuffle, F
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { OptimizedImage } from "@/components/ui/optimized-image";
 import { cn } from "@/lib/utils";
 import { useAudioPlayer } from "@/contexts/AudioPlayerContext";
 import CreateSessionDialog from "@/components/GroupSession/CreateSessionDialog";
@@ -53,7 +54,7 @@ export default function GlobalAudioPlayer() {
       <div className="h-full px-3 md:px-6 flex items-center gap-2 md:gap-6">
         {/* Track Info */}
         <div className="flex items-center gap-2 md:gap-4 w-24 md:w-64">
-          <img
+          <OptimizedImage
             src={currentTrack.cover}
             alt={currentTrack.title}
             className="w-12 h-12 md:w-16 md:h-16 rounded-lg object-cover shadow-glass"

@@ -1,7 +1,8 @@
 import { Play, Plus, Download, Trash2, Share2 } from "lucide-react";
-import { useState } from "react";
+import { useState, memo } from "react";
 import { AddToPlaylistDialog } from "@/components/Track/AddToPlaylistDialog";
 import { Button } from "@/components/ui/button";
+import { OptimizedImage } from "@/components/ui/optimized-image";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -22,7 +23,7 @@ interface TrackCardProps {
   onDelete?: () => void;
 }
 
-export const TrackCard = ({ id, title, artist, cover, audioUrl, onClick, onPlay, lyrics, downloadable, artistId, onDelete }: TrackCardProps) => {
+const TrackCardComponent = ({ id, title, artist, cover, audioUrl, onClick, onPlay, lyrics, downloadable, artistId, onDelete }: TrackCardProps) => {
   const [playlistDialogOpen, setPlaylistDialogOpen] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
@@ -127,7 +128,7 @@ export const TrackCard = ({ id, title, artist, cover, audioUrl, onClick, onPlay,
         onClick={handleCardClick}
       >
         <div className="relative aspect-square rounded-xl overflow-hidden mb-4 shadow-glass">
-          <img
+          <OptimizedImage
             src={cover || defaultCover}
             alt={title}
             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
@@ -203,3 +204,6 @@ export const TrackCard = ({ id, title, artist, cover, audioUrl, onClick, onPlay,
     </>
   );
 };
+
+// Memoize component to prevent unnecessary re-renders
+export const TrackCard = memo(TrackCardComponent);

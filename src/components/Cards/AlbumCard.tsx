@@ -1,6 +1,8 @@
 import { Disc3, Music, Trash2, Share2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { memo } from "react";
 import { Button } from "@/components/ui/button";
+import { OptimizedImage } from "@/components/ui/optimized-image";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -16,7 +18,7 @@ interface AlbumCardProps {
   onDelete?: () => void;
 }
 
-export const AlbumCard = ({ id, title, artist, coverUrl, trackCount, artistId, onDelete }: AlbumCardProps) => {
+const AlbumCardComponent = ({ id, title, artist, coverUrl, trackCount, artistId, onDelete }: AlbumCardProps) => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
@@ -88,7 +90,7 @@ export const AlbumCard = ({ id, title, artist, coverUrl, trackCount, artistId, o
       className="group relative bg-glass/50 backdrop-blur-glass rounded-2xl p-4 border border-glass-border hover:bg-glass-hover transition-all duration-300 cursor-pointer animate-fade-in"
     >
       <div className="relative aspect-square rounded-xl overflow-hidden mb-4 shadow-glass">
-        <img
+        <OptimizedImage
           src={coverUrl || defaultCover}
           alt={title}
           className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
@@ -132,3 +134,6 @@ export const AlbumCard = ({ id, title, artist, coverUrl, trackCount, artistId, o
     </div>
   );
 };
+
+// Memoize component to prevent unnecessary re-renders
+export const AlbumCard = memo(AlbumCardComponent);

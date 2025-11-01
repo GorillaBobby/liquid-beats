@@ -1,4 +1,6 @@
 import { Music, Lock } from "lucide-react";
+import { memo } from "react";
+import { OptimizedImage } from "@/components/ui/optimized-image";
 import defaultCover from "@/assets/default-cover.png";
 
 interface PlaylistCardProps {
@@ -13,14 +15,14 @@ interface PlaylistCardProps {
   onClick: () => void;
 }
 
-export const PlaylistCard = ({ playlist, onClick }: PlaylistCardProps) => {
+const PlaylistCardComponent = ({ playlist, onClick }: PlaylistCardProps) => {
   return (
     <div
       className="group bg-glass/50 backdrop-blur-glass rounded-2xl p-4 border border-glass-border hover:bg-glass-hover transition-all duration-300 cursor-pointer animate-fade-in"
       onClick={onClick}
     >
       <div className="relative aspect-square rounded-xl overflow-hidden mb-4 shadow-glass bg-glass/30 flex items-center justify-center">
-        <img
+        <OptimizedImage
           src={playlist.cover_url || defaultCover}
           alt={playlist.name}
           className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
@@ -42,3 +44,6 @@ export const PlaylistCard = ({ playlist, onClick }: PlaylistCardProps) => {
     </div>
   );
 };
+
+// Memoize component to prevent unnecessary re-renders
+export const PlaylistCard = memo(PlaylistCardComponent);
