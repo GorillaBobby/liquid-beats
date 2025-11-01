@@ -1,7 +1,6 @@
 import { Home, TrendingUp, Search, ListMusic, User } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { useAudioPlayer } from "@/contexts/AudioPlayerContext";
 
 const mainNavigation = [
   { name: "Accueil", href: "/", icon: Home },
@@ -13,14 +12,10 @@ const mainNavigation = [
 
 export const BottomNav = () => {
   const location = useLocation();
-  const { currentTrack } = useAudioPlayer();
 
   return (
     <nav 
-      className={cn(
-        "md:hidden fixed left-0 right-0 h-16 bg-glass/95 backdrop-blur-glass border-t border-glass-border z-50 flex items-center justify-around px-2 safe-area-inset-bottom transition-all duration-300",
-        currentTrack ? "bottom-20" : "bottom-0"
-      )}
+      className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-glass/95 backdrop-blur-glass border-t border-glass-border z-50 flex items-center justify-around px-2 safe-area-inset-bottom"
     >
       {mainNavigation.map((item) => {
         const isActive = location.pathname === item.href;

@@ -49,7 +49,7 @@ export default function GlobalAudioPlayer() {
   if (!currentTrack) return null;
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 h-20 md:h-24 bg-glass/90 backdrop-blur-glass border-t border-glass-border animate-slide-up z-50">
+    <div className="fixed bottom-16 md:bottom-0 left-0 right-0 h-20 md:h-24 bg-glass/90 backdrop-blur-glass border-t border-glass-border animate-slide-up z-40 md:z-50">
       <div className="h-full px-3 md:px-6 flex items-center gap-2 md:gap-6">
         {/* Track Info */}
         <div className="flex items-center gap-2 md:gap-4 w-24 md:w-64">
