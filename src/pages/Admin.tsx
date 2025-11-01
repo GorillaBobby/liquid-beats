@@ -5,7 +5,7 @@ import { Sidebar } from "@/components/Layout/Sidebar";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import { Badge, CheckCircle, XCircle, Shield } from "lucide-react";
+import { Badge, XCircle, Shield } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
   Dialog,
@@ -14,6 +14,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import verifiedNormal from "@/assets/verified-normal.png";
+import verifiedGold from "@/assets/verified-gold.png";
 
 const ADMIN_CODE = "ADMIN123456";
 
@@ -23,6 +32,7 @@ interface Artist {
   display_name: string | null;
   avatar_url: string | null;
   verified: boolean;
+  verified_tier: string | null;
   user_type: string;
 }
 
@@ -102,18 +112,24 @@ export default function Admin() {
     }
   };
 
-  const toggleVerification = async (artistId: string, currentStatus: boolean) => {
+  const toggleVerification = async (artistId: string, currentStatus: boolean, tier: string = "normal") => {
     try {
+      const updateData = currentStatus 
+        ? { verified: false, verified_tier: null }
+        : { verified: true, verified_tier: tier };
+
       const { error } = await supabase
         .from("profiles")
-        .update({ verified: !currentStatus })
+        .update(updateData)
         .eq("id", artistId);
 
       if (error) throw error;
 
       setArtists((prev) =>
         prev.map((artist) =>
-          artist.id === artistId ? { ...artist, verified: !currentStatus } : artist
+          artist.id === artistId 
+            ? { ...artist, verified: !currentStatus, verified_tier: currentStatus ? null : tier } 
+            : artist
         )
       );
 
@@ -272,33 +288,48 @@ export default function Admin() {
                       {artist.display_name || artist.username}
                     </h3>
                     {artist.verified && (
-                      <CheckCircle className="w-5 h-5 text-primary fill-primary" />
+                      <img 
+                        src={artist.verified_tier === "gold" ? verifiedGold : verifiedNormal} 
+                        alt="Vérifié" 
+                        className="w-5 h-5" 
+                      />
                     )}
                   </div>
                   <p className="text-sm text-muted-foreground">@{artist.username}</p>
                 </div>
 
-                <Button
-                  onClick={() => toggleVerification(artist.id, artist.verified)}
-                  variant={artist.verified ? "outline" : "default"}
-                  className={
-                    artist.verified
-                      ? "bg-glass/30 border-glass-border"
-                      : "bg-gradient-primary hover:shadow-glow transition-all duration-300"
-                  }
-                >
-                  {artist.verified ? (
-                    <>
-                      <XCircle className="w-4 h-4 mr-2" />
-                      Retirer certification
-                    </>
-                  ) : (
-                    <>
-                      <CheckCircle className="w-4 h-4 mr-2" />
-                      Certifier
-                    </>
-                  )}
-                </Button>
+                {artist.verified ? (
+                  <Button
+                    onClick={() => toggleVerification(artist.id, artist.verified)}
+                    variant="outline"
+                    className="bg-glass/30 border-glass-border"
+                  >
+                    <XCircle className="w-4 h-4 mr-2" />
+                    Retirer certification
+                  </Button>
+                ) : (
+                  <div className="flex gap-2">
+                    <Select onValueChange={(tier) => toggleVerification(artist.id, false, tier)}>
+                      <SelectTrigger className="w-[180px] bg-gradient-primary border-none">
+                        <SelectValue placeholder="Certifier" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-glass/95 backdrop-blur-glass border-glass-border">
+                        <SelectItem value="normal">
+                          <div className="flex items-center gap-2">
+                            <img src={verifiedNormal} alt="Normal" className="w-4 h-4" />
+                            <span>Normal</span>
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="gold">
+                          <div className="flex items-center gap-2">
+                            <img src={verifiedGold} alt="Gold" className="w-4 h-4" />
+                            <span>Gold</span>
+                          </div>
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
               </div>
               ))}
 

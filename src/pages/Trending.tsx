@@ -83,7 +83,7 @@ export default function Trending() {
     <div className="min-h-screen bg-background">
       <Sidebar />
 
-      <main className="ml-64 pb-32 p-8">
+      <main className="ml-64 pb-40 p-8">
         <section>
           <div className="flex items-center gap-3 mb-8">
             <TrendingUp className="w-8 h-8 text-primary" />

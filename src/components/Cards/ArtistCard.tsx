@@ -1,5 +1,7 @@
 import { Button } from "@/components/ui/button";
-import { UserPlus, CheckCircle } from "lucide-react";
+import { UserPlus } from "lucide-react";
+import verifiedNormal from "@/assets/verified-normal.png";
+import verifiedGold from "@/assets/verified-gold.png";
 
 interface ArtistCardProps {
   name: string;
@@ -7,10 +9,11 @@ interface ArtistCardProps {
   image: string;
   followers: string;
   verified?: boolean;
+  verified_tier?: string;
   onClick: () => void;
 }
 
-export const ArtistCard = ({ name, genre, image, followers, verified, onClick }: ArtistCardProps) => {
+export const ArtistCard = ({ name, genre, image, followers, verified, verified_tier, onClick }: ArtistCardProps) => {
   return (
     <div
       className="group bg-glass/50 backdrop-blur-glass rounded-2xl p-6 border border-glass-border hover:bg-glass-hover transition-all duration-300 cursor-pointer animate-fade-in"
@@ -27,7 +30,13 @@ export const ArtistCard = ({ name, genre, image, followers, verified, onClick }:
       
       <div className="flex items-center justify-center gap-2 mb-1">
         <h3 className="font-semibold text-foreground text-center">{name}</h3>
-        {verified && <CheckCircle className="w-4 h-4 text-primary fill-primary" />}
+        {verified && (
+          <img 
+            src={verified_tier === "gold" ? verifiedGold : verifiedNormal} 
+            alt="Vérifié" 
+            className="w-5 h-5" 
+          />
+        )}
       </div>
       <p className="text-sm text-muted-foreground text-center mb-1">{genre}</p>
       <p className="text-xs text-muted-foreground text-center mb-4">{followers} abonnés</p>

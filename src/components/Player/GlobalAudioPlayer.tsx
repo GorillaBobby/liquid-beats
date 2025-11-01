@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Play, Pause, SkipBack, SkipForward, Volume2, Heart, Repeat, Shuffle, FileText, Users, UserPlus } from "lucide-react";
+import { Play, Pause, SkipBack, SkipForward, Volume2, Heart, Repeat2, Shuffle, FileText, Users, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -69,24 +69,24 @@ export default function GlobalAudioPlayer() {
         {/* Controls */}
         <div className="flex-1 flex flex-col items-center gap-1 md:gap-2">
           <div className="flex items-center gap-2 md:gap-4">
-            <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground hidden md:flex">
-              <Shuffle className="w-4 h-4" />
+            <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground hidden md:flex hover:scale-110 transition-transform">
+              <Shuffle className="w-5 h-5" />
             </Button>
-            <Button variant="ghost" size="icon" onClick={playPrevious} className="w-8 h-8 md:w-10 md:h-10">
-              <SkipBack className="w-4 h-4 md:w-5 md:h-5" />
+            <Button variant="ghost" size="icon" onClick={playPrevious} className="w-8 h-8 md:w-10 md:h-10 hover:scale-110 transition-transform">
+              <SkipBack className="w-5 h-5 md:w-6 md:h-6 fill-current" />
             </Button>
             <Button
               size="icon"
-              className="w-9 h-9 md:w-10 md:h-10 bg-gradient-primary hover:shadow-glow transition-all duration-300"
+              className="w-10 h-10 md:w-12 md:h-12 bg-gradient-primary hover:shadow-glow transition-all duration-300 hover:scale-110"
               onClick={togglePlay}
             >
-              {isPlaying ? <Pause className="w-4 h-4 md:w-5 md:h-5" /> : <Play className="w-4 h-4 md:w-5 md:h-5 ml-0.5" />}
+              {isPlaying ? <Pause className="w-5 h-5 md:w-6 md:h-6 fill-current" /> : <Play className="w-5 h-5 md:w-6 md:h-6 ml-0.5 fill-current" />}
             </Button>
-            <Button variant="ghost" size="icon" onClick={playNext} className="w-8 h-8 md:w-10 md:h-10">
-              <SkipForward className="w-4 h-4 md:w-5 md:h-5" />
+            <Button variant="ghost" size="icon" onClick={playNext} className="w-8 h-8 md:w-10 md:h-10 hover:scale-110 transition-transform">
+              <SkipForward className="w-5 h-5 md:w-6 md:h-6 fill-current" />
             </Button>
-            <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground hidden md:flex">
-              <Repeat className="w-4 h-4" />
+            <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground hidden md:flex hover:scale-110 transition-transform">
+              <Repeat2 className="w-5 h-5" />
             </Button>
           </div>
           

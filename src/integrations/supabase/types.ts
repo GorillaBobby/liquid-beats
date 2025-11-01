@@ -301,6 +301,7 @@ export type Database = {
           user_type: Database["public"]["Enums"]["user_type"]
           username: string
           verified: boolean | null
+          verified_tier: string | null
         }
         Insert: {
           avatar_url?: string | null
@@ -312,6 +313,7 @@ export type Database = {
           user_type: Database["public"]["Enums"]["user_type"]
           username: string
           verified?: boolean | null
+          verified_tier?: string | null
         }
         Update: {
           avatar_url?: string | null
@@ -323,6 +325,7 @@ export type Database = {
           user_type?: Database["public"]["Enums"]["user_type"]
           username?: string
           verified?: boolean | null
+          verified_tier?: string | null
         }
         Relationships: []
       }
