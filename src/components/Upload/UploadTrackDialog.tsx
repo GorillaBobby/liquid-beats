@@ -72,12 +72,12 @@ export const UploadTrackDialog = ({ open, onOpenChange, onUploadSuccess }: Uploa
     try {
       setUploading(true);
 
-      // Upload audio without compression
+      // Upload audio without compression - preserves original quality
       const audioPath = `${user.id}/${Date.now()}_${audioFile.name}`;
       const { error: audioError } = await supabase.storage
         .from("audio-files")
         .upload(audioPath, audioFile, {
-          contentType: audioFile.type || 'audio/mpeg',
+          contentType: audioFile.type, // Preserves original format (FLAC, WAV, etc.)
           cacheControl: '3600',
           upsert: false
         });
@@ -175,13 +175,13 @@ export const UploadTrackDialog = ({ open, onOpenChange, onUploadSuccess }: Uploa
 
       if (albumError) throw albumError;
 
-      // Upload all tracks without compression
+      // Upload all tracks without compression - preserves original quality
       for (const trackFile of trackFiles) {
         const audioPath = `${user.id}/${Date.now()}_${trackFile.file.name}`;
         const { error: audioError } = await supabase.storage
           .from("audio-files")
           .upload(audioPath, trackFile.file, {
-            contentType: trackFile.file.type || 'audio/mpeg',
+            contentType: trackFile.file.type, // Preserves original format (FLAC, WAV, etc.)
             cacheControl: '3600',
             upsert: false
           });
@@ -299,17 +299,20 @@ export const UploadTrackDialog = ({ open, onOpenChange, onUploadSuccess }: Uploa
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="audio">Fichier audio * (MP3, WAV, etc.)</Label>
+                <Label htmlFor="audio">Fichier audio * (MP3, FLAC, WAV, ALAC, AIFF, etc.)</Label>
                 <div className="flex items-center gap-3">
                   <Input
                     id="audio"
                     type="file"
-                    accept="audio/*"
+                    accept="audio/*,.flac,.wav,.alac,.aiff,.ape,.wv,.m4a"
                     onChange={(e) => setAudioFile(e.target.files?.[0] || null)}
                     className="bg-glass/30 border-glass-border"
                   />
                   {audioFile && <Music className="w-5 h-5 text-primary" />}
                 </div>
+                <p className="text-xs text-muted-foreground">
+                  Formats lossless recommandés : FLAC, WAV, ALAC, AIFF pour une qualité maximale
+                </p>
               </div>
 
               <div className="space-y-2">
@@ -402,15 +405,18 @@ export const UploadTrackDialog = ({ open, onOpenChange, onUploadSuccess }: Uploa
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="trackFiles">Fichiers audio * (MP3, WAV, etc.)</Label>
+                <Label htmlFor="trackFiles">Fichiers audio * (MP3, FLAC, WAV, ALAC, AIFF, etc.)</Label>
                 <Input
                   id="trackFiles"
                   type="file"
-                  accept="audio/*"
+                  accept="audio/*,.flac,.wav,.alac,.aiff,.ape,.wv,.m4a"
                   multiple
                   onChange={(e) => handleAddTrackFiles(e.target.files)}
                   className="bg-glass/30 border-glass-border"
                 />
+                <p className="text-xs text-muted-foreground">
+                  Formats lossless recommandés : FLAC, WAV, ALAC, AIFF pour une qualité maximale
+                </p>
               </div>
 
               {trackFiles.length > 0 && (
