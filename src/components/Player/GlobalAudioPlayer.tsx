@@ -8,6 +8,7 @@ import { useAudioPlayer } from "@/contexts/AudioPlayerContext";
 import CreateSessionDialog from "@/components/GroupSession/CreateSessionDialog";
 import JoinSessionDialog from "@/components/GroupSession/JoinSessionDialog";
 import GroupSessionPanel from "@/components/GroupSession/GroupSessionPanel";
+import GroupSessionButton from "@/components/GroupSession/GroupSessionButton";
 import { useGroupSession } from "@/hooks/useGroupSession";
 
 export default function GlobalAudioPlayer() {
@@ -207,8 +208,9 @@ export default function GlobalAudioPlayer() {
         onOpenChange={setJoinSessionOpen}
       />
       
-      {/* Group Session Panel */}
+      {/* Group Session Panel & Button */}
       <GroupSessionPanel />
+      <GroupSessionButton />
     </div>
   );
 }

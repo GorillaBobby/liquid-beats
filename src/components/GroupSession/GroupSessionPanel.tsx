@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { X, Send, Users } from "lucide-react";
+import { Send, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -16,6 +16,7 @@ export default function GroupSessionPanel() {
     participants,
     chatMessages,
     isHost,
+    isChatOpen,
     leaveSession,
     sendMessage,
     sendReaction
@@ -23,7 +24,7 @@ export default function GroupSessionPanel() {
 
   const [message, setMessage] = useState("");
 
-  if (!currentSession) return null;
+  if (!currentSession || !isChatOpen) return null;
 
   const handleSendMessage = () => {
     if (!message.trim()) return;
@@ -32,9 +33,9 @@ export default function GroupSessionPanel() {
   };
 
   return (
-    <div className="fixed top-20 right-4 w-80 h-[calc(100vh-180px)] bg-glass/95 backdrop-blur-glass border border-glass-border rounded-lg shadow-glass flex flex-col z-40">
+    <div className="fixed top-20 right-4 w-80 h-[calc(100vh-180px)] bg-glass/95 backdrop-blur-glass border border-glass-border rounded-lg shadow-glass flex flex-col z-40 animate-slide-in-right">
       {/* Header */}
-      <div className="p-4 border-b border-glass-border flex items-center justify-between">
+      <div className="p-4 border-b border-glass-border">
         <div className="flex items-center gap-2">
           <Users className="w-5 h-5 text-primary" />
           <div>
@@ -44,14 +45,6 @@ export default function GroupSessionPanel() {
             </p>
           </div>
         </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={leaveSession}
-          className="text-muted-foreground hover:text-destructive"
-        >
-          <X className="w-4 h-4" />
-        </Button>
       </div>
 
       {/* Participants */}

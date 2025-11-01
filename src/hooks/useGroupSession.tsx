@@ -45,6 +45,7 @@ export const useGroupSession = () => {
   const [participants, setParticipants] = useState<SessionParticipant[]>([]);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [isHost, setIsHost] = useState(false);
+  const [isChatOpen, setIsChatOpen] = useState(true);
   const { toast } = useToast();
   const { setCurrentTrack, seek, togglePlay, isPlaying, currentTime } = useAudioPlayer();
 
@@ -399,6 +400,8 @@ export const useGroupSession = () => {
     participants,
     chatMessages,
     isHost,
+    isChatOpen,
+    setIsChatOpen,
     createSession,
     joinSession,
     leaveSession,
