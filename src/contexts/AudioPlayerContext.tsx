@@ -123,6 +123,8 @@ export const AudioPlayerProvider = ({ children }: { children: ReactNode }) => {
         onEnded={playNext}
         onPlay={() => setIsPlaying(true)}
         onPause={() => setIsPlaying(false)}
+        preload="auto"
+        crossOrigin="anonymous"
       />
     </AudioPlayerContext.Provider>
   );

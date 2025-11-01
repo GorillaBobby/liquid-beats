@@ -72,11 +72,15 @@ export const UploadTrackDialog = ({ open, onOpenChange, onUploadSuccess }: Uploa
     try {
       setUploading(true);
 
-      // Upload audio
+      // Upload audio without compression
       const audioPath = `${user.id}/${Date.now()}_${audioFile.name}`;
       const { error: audioError } = await supabase.storage
         .from("audio-files")
-        .upload(audioPath, audioFile);
+        .upload(audioPath, audioFile, {
+          contentType: audioFile.type || 'audio/mpeg',
+          cacheControl: '3600',
+          upsert: false
+        });
 
       if (audioError) throw audioError;
 
@@ -171,12 +175,16 @@ export const UploadTrackDialog = ({ open, onOpenChange, onUploadSuccess }: Uploa
 
       if (albumError) throw albumError;
 
-      // Upload all tracks
+      // Upload all tracks without compression
       for (const trackFile of trackFiles) {
         const audioPath = `${user.id}/${Date.now()}_${trackFile.file.name}`;
         const { error: audioError } = await supabase.storage
           .from("audio-files")
-          .upload(audioPath, trackFile.file);
+          .upload(audioPath, trackFile.file, {
+            contentType: trackFile.file.type || 'audio/mpeg',
+            cacheControl: '3600',
+            upsert: false
+          });
 
         if (audioError) throw audioError;
 

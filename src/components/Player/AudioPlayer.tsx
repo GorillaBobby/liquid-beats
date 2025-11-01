@@ -91,6 +91,8 @@ export const AudioPlayer = ({ currentTrack, onNext, onPrevious }: AudioPlayerPro
         onTimeUpdate={handleTimeUpdate}
         onLoadedMetadata={handleLoadedMetadata}
         onEnded={onNext}
+        preload="auto"
+        crossOrigin="anonymous"
       />
       
       <div className="h-full px-6 flex items-center gap-6">
