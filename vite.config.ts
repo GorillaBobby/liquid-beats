@@ -21,13 +21,7 @@ export default defineConfig(({ mode }) => ({
   build: {
     // Optimize build for performance
     target: 'es2015',
-    minify: 'terser',
-    terserOptions: {
-      compress: {
-        drop_console: mode === 'production',
-        drop_debugger: mode === 'production',
-      },
-    },
+    minify: 'esbuild',
     rollupOptions: {
       output: {
         manualChunks: {
