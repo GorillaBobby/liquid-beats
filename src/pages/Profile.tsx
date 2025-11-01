@@ -92,7 +92,7 @@ export default function Profile() {
         query = query.eq("id", user!.id);
       }
 
-      const { data: profileData, error: profileError } = await query.single();
+      const { data: profileData, error: profileError } = await query.maybeSingle();
 
       if (profileError) throw profileError;
       if (!profileData) {
