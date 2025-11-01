@@ -1,9 +1,10 @@
-import { Home, TrendingUp, Radio, ListMusic, User, Search, Inbox, Shield, Disc3 } from "lucide-react";
+import { Home, TrendingUp, Radio, ListMusic, User, Search, Inbox, Shield, Disc3, MessageSquare } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { FeedbackDialog } from "@/components/Feedback/FeedbackDialog";
 
 const navigation = [
   { name: "Découvrir", href: "/", icon: Home },
@@ -60,7 +61,7 @@ export const Sidebar = () => {
   });
 
   return (
-    <aside className="hidden md:block fixed left-0 top-0 h-screen w-64 p-6 bg-glass/50 backdrop-blur-glass border-r border-glass-border z-40">
+    <aside className="hidden md:block fixed left-0 top-0 h-screen w-64 p-6 bg-glass/50 backdrop-blur-glass border-r border-glass-border z-40 overflow-y-auto">
       <div className="mb-8">
         <h1 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
           LiquidBeats
@@ -91,6 +92,10 @@ export const Sidebar = () => {
             </Link>
           );
         })}
+        
+        <div className="pt-4 border-t border-glass-border mt-4">
+          <FeedbackDialog />
+        </div>
       </nav>
     </aside>
   );

@@ -5,7 +5,7 @@ import { Sidebar } from "@/components/Layout/Sidebar";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import { Badge, XCircle, Shield, Trash2, Users } from "lucide-react";
+import { Badge, XCircle, Shield, Trash2, Users, MessageSquare } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
   Dialog,
@@ -63,8 +63,9 @@ export default function Admin() {
   const [allTracks, setAllTracks] = useState<any[]>([]);
   const [logs, setLogs] = useState<AdminLog[]>([]);
   const [allUsers, setAllUsers] = useState<User[]>([]);
+  const [allFeedbacks, setAllFeedbacks] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [activeTab, setActiveTab] = useState<"artists" | "tracks" | "users" | "logs">("artists");
+  const [activeTab, setActiveTab] = useState<"artists" | "tracks" | "users" | "logs" | "feedbacks">("artists");
   const [loading, setLoading] = useState(true);
   const [codeDialogOpen, setCodeDialogOpen] = useState(true);
   const [code, setCode] = useState("");
@@ -82,6 +83,7 @@ export default function Admin() {
       loadTracks();
       loadUsers();
       loadLogs();
+      loadFeedbacks();
     }
   }, [user, authLoading, isAuthenticated]);
 
@@ -132,6 +134,25 @@ export default function Admin() {
       setAllTracks(tracksData || []);
     } catch (error: any) {
       toast({ variant: "destructive", title: "Erreur", description: error.message });
+    }
+  };
+
+  const loadFeedbacks = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("feedbacks")
+        .select("*, profiles!inner(username, display_name)")
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      setAllFeedbacks(data || []);
+    } catch (error: any) {
+      console.error("Error loading feedbacks:", error);
+      toast({ 
+        variant: "destructive", 
+        title: "Erreur", 
+        description: "Erreur lors du chargement des feedbacks"
+      });
     }
   };
 
@@ -260,6 +281,7 @@ export default function Admin() {
       
       loadUsers();
       loadArtists();
+      loadFeedbacks();
     } catch (error: any) {
       console.error("Delete user error:", error);
       toast({ 
@@ -287,6 +309,37 @@ export default function Admin() {
       user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.display_name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const filteredFeedbacks = allFeedbacks.filter(
+    (feedback) =>
+      feedback.subject?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      feedback.message?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      feedback.profiles?.username?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const updateFeedbackStatus = async (feedbackId: string, newStatus: string) => {
+    try {
+      const { error } = await supabase
+        .from("feedbacks")
+        .update({ status: newStatus })
+        .eq("id", feedbackId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Statut mis à jour",
+        description: "Le feedback a été mis à jour avec succès",
+      });
+      loadFeedbacks();
+    } catch (error: any) {
+      console.error("Error updating feedback:", error);
+      toast({ 
+        variant: "destructive", 
+        title: "Erreur", 
+        description: "Erreur lors de la mise à jour"
+      });
+    }
+  };
 
   if (authLoading) {
     return <div className="min-h-screen bg-background flex items-center justify-center">Chargement...</div>;
@@ -389,9 +442,17 @@ export default function Admin() {
             >
               Logs
             </Button>
+            <Button
+              variant={activeTab === "feedbacks" ? "default" : "outline"}
+              onClick={() => setActiveTab("feedbacks")}
+              className={activeTab === "feedbacks" ? "bg-gradient-primary" : "bg-glass/30 border-glass-border"}
+            >
+              <MessageSquare className="w-4 h-4 mr-2" />
+              Feedbacks
+            </Button>
           </div>
 
-          {activeTab !== "logs" && (
+          {activeTab !== "logs" && activeTab !== "feedbacks" && (
             <div className="mb-6">
               <Input
                 placeholder={
@@ -399,7 +460,9 @@ export default function Admin() {
                     ? "Rechercher un artiste..." 
                     : activeTab === "tracks"
                     ? "Rechercher une musique..."
-                    : "Rechercher un utilisateur..."
+                    : activeTab === "users"
+                    ? "Rechercher un utilisateur..."
+                    : "Rechercher dans les feedbacks..."
                 }
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -553,6 +616,86 @@ export default function Admin() {
 
               {filteredUsers.length === 0 && (
                 <p className="text-center text-muted-foreground py-12">Aucun utilisateur trouvé</p>
+              )}
+            </div>
+          ) : activeTab === "feedbacks" ? (
+            <div className="bg-glass/50 backdrop-blur-glass rounded-2xl border border-glass-border overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-glass/30 border-b border-glass-border">
+                    <tr>
+                      <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Date</th>
+                      <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Utilisateur</th>
+                      <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Sujet</th>
+                      <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Message</th>
+                      <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Statut</th>
+                      <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-glass-border">
+                    {filteredFeedbacks.map((feedback) => (
+                      <tr key={feedback.id} className="hover:bg-glass/30 transition-colors">
+                        <td className="px-6 py-4 text-sm text-muted-foreground whitespace-nowrap">
+                          {new Date(feedback.created_at).toLocaleDateString("fr-FR", {
+                            day: "2-digit",
+                            month: "2-digit",
+                            year: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </td>
+                        <td className="px-6 py-4 text-sm">
+                          <div className="flex flex-col">
+                            <span className="font-medium text-foreground">
+                              {feedback.profiles?.display_name || feedback.profiles?.username}
+                            </span>
+                            <span className="text-xs text-muted-foreground">@{feedback.profiles?.username}</span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-sm text-foreground max-w-xs truncate">
+                          {feedback.subject}
+                        </td>
+                        <td className="px-6 py-4 text-sm text-muted-foreground max-w-md">
+                          <div className="line-clamp-2">{feedback.message}</div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <select
+                            value={feedback.status}
+                            onChange={(e) => updateFeedbackStatus(feedback.id, e.target.value)}
+                            className="text-sm px-3 py-1 rounded-lg bg-background border border-glass-border"
+                          >
+                            <option value="pending">En attente</option>
+                            <option value="in_progress">En cours</option>
+                            <option value="resolved">Résolu</option>
+                            <option value="rejected">Rejeté</option>
+                          </select>
+                        </td>
+                        <td className="px-6 py-4">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              navigator.clipboard.writeText(
+                                `Sujet: ${feedback.subject}\nMessage: ${feedback.message}\nDe: ${feedback.profiles?.username}`
+                              );
+                              toast({
+                                title: "Copié",
+                                description: "Feedback copié dans le presse-papier",
+                              });
+                            }}
+                          >
+                            Copier
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              {filteredFeedbacks.length === 0 && (
+                <div className="text-center py-12">
+                  <p className="text-muted-foreground">Aucun feedback trouvé</p>
+                </div>
               )}
             </div>
           ) : (
