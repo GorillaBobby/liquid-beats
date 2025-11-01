@@ -62,6 +62,7 @@ export const AudioPlayerProvider = ({ children }: { children: ReactNode }) => {
       const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
       audioContextRef.current = audioContext;
 
+      // CRITICAL: Can only create MediaElementSource once per audio element
       const source = audioContext.createMediaElementSource(audioRef.current);
       sourceNodeRef.current = source;
 
@@ -97,21 +98,43 @@ export const AudioPlayerProvider = ({ children }: { children: ReactNode }) => {
       masterGainNode.connect(audioContext.destination);
 
       isAudioInitializedRef.current = true;
+      
+      console.log("Audio initialized successfully");
     } catch (error) {
       console.error("Failed to initialize audio:", error);
+      // If audio graph initialization fails, mark as initialized to prevent retries
+      isAudioInitializedRef.current = true;
     }
   };
+
+  // Initialize on mount
+  useEffect(() => {
+    return () => {
+      if (audioContextRef.current) {
+        audioContextRef.current.close();
+      }
+    };
+  }, []);
 
   const setCurrentTrack = (track: Track) => {
     setCurrentTrackState(track);
     if (audioRef.current) {
       audioRef.current.src = track.audioUrl;
       audioRef.current.load();
-      initializeAudio();
+      
+      // Initialize audio graph on first interaction if needed
+      if (!isAudioInitializedRef.current) {
+        initializeAudio();
+      }
+      
+      // Resume audio context if suspended
       if (audioContextRef.current?.state === 'suspended') {
         audioContextRef.current.resume();
       }
-      audioRef.current.play().then(() => setIsPlaying(true));
+      
+      audioRef.current.play()
+        .then(() => setIsPlaying(true))
+        .catch(err => console.error("Play failed:", err));
     }
   };
 
@@ -130,11 +153,19 @@ export const AudioPlayerProvider = ({ children }: { children: ReactNode }) => {
       audioRef.current.pause();
       setIsPlaying(false);
     } else {
-      initializeAudio();
+      // Initialize audio graph on first interaction if needed
+      if (!isAudioInitializedRef.current) {
+        initializeAudio();
+      }
+      
+      // Resume audio context if suspended
       if (audioContextRef.current?.state === 'suspended') {
         audioContextRef.current.resume();
       }
-      audioRef.current.play().then(() => setIsPlaying(true));
+      
+      audioRef.current.play()
+        .then(() => setIsPlaying(true))
+        .catch(err => console.error("Play failed:", err));
     }
   };
 
