@@ -149,7 +149,7 @@ export default function TrackDetail() {
         <Button
           onClick={() => navigate(-1)}
           variant="ghost"
-          className="mb-6"
+          className="mb-6 hidden md:flex"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Retour
