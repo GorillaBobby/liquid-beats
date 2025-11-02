@@ -88,11 +88,7 @@ export const Sidebar = () => {
   return <aside className="hidden md:flex fixed left-0 top-0 h-screen w-64 flex-col bg-glass/50 backdrop-blur-glass border-r border-glass-border z-40">
       <div className="p-6">
         <div className="mb-8">
-          <img
-            src={new URL("@/assets/logo.png", import.meta.url).href}
-            alt="LiquidBeats"
-            className="h-12"
-          />
+          <img src={new URL("@/assets/logo.png", import.meta.url).href} alt="LiquidBeats" className="h-12" />
         </div>
         
         <nav className="space-y-2">
@@ -113,7 +109,7 @@ export const Sidebar = () => {
               <a href="/Liquid-Beats_0.3.apk" download="Liquid-Beats_0.3.apk" className="w-full">
                 <Button variant="outline" className="w-full justify-start gap-3 bg-glass/30 border-glass-border hover:bg-glass-hover">
                   <Download className="w-5 h-5" />
-                  <span>Installer l'apk</span>
+                  <span>Installer l'Apk</span>
                 </Button>
               </a>
             </div>
