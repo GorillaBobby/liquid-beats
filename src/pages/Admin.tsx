@@ -8,9 +8,10 @@ import { useAuth } from "@/hooks/useAuth";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import { Badge, XCircle, Shield, Trash2, Users, MessageSquare, ArrowLeft, Megaphone, KeyRound, Loader2 } from "lucide-react";
+import { Badge, XCircle, Shield, Trash2, Users, MessageSquare, ArrowLeft, Megaphone, KeyRound, Loader2, Newspaper } from "lucide-react";
 import { AnnouncementManager } from "@/components/Admin/AnnouncementManager";
 import { ResetPasswordDialog } from "@/components/Admin/ResetPasswordDialog";
+import { ActusManager } from "@/components/Admin/ActusManager";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -74,7 +75,7 @@ export default function Admin() {
   const [allUsers, setAllUsers] = useState<User[]>([]);
   const [allFeedbacks, setAllFeedbacks] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [activeTab, setActiveTab] = useState<"artists" | "tracks" | "users" | "logs" | "feedbacks" | "announcements">("artists");
+  const [activeTab, setActiveTab] = useState<"artists" | "tracks" | "users" | "logs" | "feedbacks" | "announcements" | "actus">("artists");
   const [loading, setLoading] = useState(true);
   const [resetPasswordOpen, setResetPasswordOpen] = useState(false);
   const [selectedUserEmail, setSelectedUserEmail] = useState("");
@@ -494,9 +495,17 @@ export default function Admin() {
                 <Megaphone className="w-4 h-4 mr-2" />
                 Annonces
               </Button>
+              <Button
+                variant={activeTab === "actus" ? "default" : "outline"}
+                onClick={() => setActiveTab("actus")}
+                className={activeTab === "actus" ? "bg-gradient-primary" : "bg-glass/30 border-glass-border"}
+              >
+                <Newspaper className="w-4 h-4 mr-2" />
+                Actus
+              </Button>
             </div>
 
-            {activeTab !== "logs" && activeTab !== "feedbacks" && activeTab !== "announcements" && (
+            {activeTab !== "logs" && activeTab !== "feedbacks" && activeTab !== "announcements" && activeTab !== "actus" && (
               <div className="mb-6">
                 <Input
                   placeholder={
@@ -757,6 +766,8 @@ export default function Admin() {
               </div>
             ) : activeTab === "announcements" ? (
               <AnnouncementManager />
+            ) : activeTab === "actus" ? (
+              <ActusManager />
             ) : (
               <div className="space-y-4">
                 <div className="bg-glass/50 backdrop-blur-glass rounded-2xl p-6 border border-glass-border">

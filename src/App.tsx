@@ -16,6 +16,7 @@ import Following from "./pages/Following";
 import Feed from "./pages/Feed";
 import Trending from "./pages/Trending";
 import Admin from "./pages/Admin";
+import Actus from "./pages/Actus";
 import Playlists from "./pages/Playlists";
 import PlaylistDetail from "./pages/PlaylistDetail";
 import Albums from "./pages/Albums";
@@ -38,6 +39,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/trending" element={<Trending />} />
+            <Route path="/actus" element={<Actus />} />
             <Route path="/feed" element={<Feed />} />
             <Route path="/search" element={<Search />} />
             <Route path="/playlists" element={<Playlists />} />

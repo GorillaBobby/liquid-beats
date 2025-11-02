@@ -1,10 +1,10 @@
-import { Home, TrendingUp, Search, ListMusic, User } from "lucide-react";
+import { Home, TrendingUp, Search, ListMusic, User, Newspaper } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
 const mainNavigation = [
   { name: "Accueil", href: "/", icon: Home },
-  { name: "Tendances", href: "/trending", icon: TrendingUp },
+  { name: "Actus", href: "/actus", icon: Newspaper },
   { name: "Recherche", href: "/search", icon: Search },
   { name: "Playlists", href: "/playlists", icon: ListMusic },
   { name: "Profil", href: "/profile", icon: User },

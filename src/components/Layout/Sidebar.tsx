@@ -1,4 +1,4 @@
-import { Home, TrendingUp, Radio, ListMusic, User, Search, Inbox, Shield, Disc3, MessageSquare, LogOut, Download } from "lucide-react";
+import { Home, TrendingUp, Radio, ListMusic, User, Search, Inbox, Shield, Disc3, MessageSquare, LogOut, Download, Newspaper } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
@@ -14,6 +14,10 @@ const navigation = [{
   name: "Tendances",
   href: "/trending",
   icon: TrendingUp
+}, {
+  name: "Actus",
+  href: "/actus",
+  icon: Newspaper
 }, {
   name: "Mon fil",
   href: "/feed",
