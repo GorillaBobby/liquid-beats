@@ -7,8 +7,9 @@ import { BottomNav } from "@/components/Layout/BottomNav";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import { Badge, XCircle, Shield, Trash2, Users, MessageSquare, ArrowLeft, Megaphone } from "lucide-react";
+import { Badge, XCircle, Shield, Trash2, Users, MessageSquare, ArrowLeft, Megaphone, KeyRound } from "lucide-react";
 import { AnnouncementManager } from "@/components/Admin/AnnouncementManager";
+import { ResetPasswordDialog } from "@/components/Admin/ResetPasswordDialog";
 import { Input } from "@/components/ui/input";
 import {
   Dialog,
@@ -74,6 +75,8 @@ export default function Admin() {
   const [code, setCode] = useState("");
   const [isVerifying, setIsVerifying] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [resetPasswordOpen, setResetPasswordOpen] = useState(false);
+  const [selectedUserEmail, setSelectedUserEmail] = useState("");
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -625,14 +628,27 @@ export default function Admin() {
                     </p>
                   </div>
 
-                  <Button
-                    onClick={() => deleteUser(user.id)}
-                    variant="outline"
-                    className="bg-glass/30 border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
-                  >
-                    <Trash2 className="w-4 h-4 mr-2" />
-                    Supprimer le compte
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={() => {
+                        setSelectedUserEmail("");
+                        setResetPasswordOpen(true);
+                      }}
+                      variant="outline"
+                      className="bg-glass/30 border-glass-border hover:bg-glass/50"
+                    >
+                      <KeyRound className="w-4 h-4 mr-2" />
+                      Réinitialiser MDP
+                    </Button>
+                    <Button
+                      onClick={() => deleteUser(user.id)}
+                      variant="outline"
+                      className="bg-glass/30 border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                    >
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      Supprimer le compte
+                    </Button>
+                  </div>
                 </div>
               ))}
 
@@ -793,6 +809,12 @@ export default function Admin() {
         </div>
       </main>
       )}
+      
+      <ResetPasswordDialog
+        open={resetPasswordOpen}
+        onOpenChange={setResetPasswordOpen}
+        initialEmail={selectedUserEmail}
+      />
     </div>
   );
 }
