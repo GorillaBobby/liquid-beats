@@ -38,6 +38,8 @@ interface Track {
   downloadable?: boolean;
   artistId?: string;
   albumId?: string;
+  artistVerified?: boolean;
+  artistVerifiedTier?: string | null;
 }
 
 interface Album {
@@ -47,6 +49,8 @@ interface Album {
   artist: string;
   trackCount: number;
   artistId: string;
+  artistVerified: boolean;
+  artistVerifiedTier: string | null;
 }
 
 export default function Profile() {
@@ -128,6 +132,8 @@ export default function Profile() {
                 artist: profileData.display_name || profileData.username,
                 trackCount: count || 0,
                 artistId: album.artist_id,
+                artistVerified: profileData.verified || false,
+                artistVerifiedTier: profileData.verified_tier,
               };
             })
           );
@@ -137,7 +143,7 @@ export default function Profile() {
         // Load all tracks
         const { data: tracksData } = await supabase
           .from("tracks")
-          .select("*, profiles!inner(username, display_name)")
+          .select("*, profiles!inner(username, display_name, verified, verified_tier)")
           .eq("artist_id", profileData.id)
           .order("created_at", { ascending: false });
 
@@ -152,6 +158,8 @@ export default function Profile() {
             downloadable: t.downloadable,
             artistId: t.artist_id,
             albumId: t.album_id,
+            artistVerified: t.profiles.verified || false,
+            artistVerifiedTier: t.profiles.verified_tier,
           }));
           
           setTracks(allTracks);

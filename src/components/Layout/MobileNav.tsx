@@ -72,9 +72,11 @@ export const MobileNav = () => {
   return (
     <header className="md:hidden fixed top-0 left-0 right-0 bg-glass/50 backdrop-blur-glass border-b border-glass-border z-50 pt-8 pb-2">
       <div className="flex items-center justify-between px-4">
-        <h1 className="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-          LiquidBeats
-        </h1>
+        <img
+          src={new URL("@/assets/logo.png", import.meta.url).href}
+          alt="LiquidBeats"
+          className="h-8"
+        />
         
         <Drawer open={open} onOpenChange={setOpen}>
           <DrawerTrigger asChild>
@@ -84,8 +86,12 @@ export const MobileNav = () => {
           </DrawerTrigger>
         <DrawerContent>
           <DrawerHeader>
-            <DrawerTitle className="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-              Menu
+            <DrawerTitle className="text-center">
+              <img
+                src={new URL("@/assets/logo.png", import.meta.url).href}
+                alt="LiquidBeats"
+                className="h-10 mx-auto"
+              />
             </DrawerTitle>
           </DrawerHeader>
           <nav className="p-4 space-y-2">

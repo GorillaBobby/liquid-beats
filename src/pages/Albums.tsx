@@ -7,6 +7,8 @@ import { BottomNav } from "@/components/Layout/BottomNav";
 import { useAuth } from "@/hooks/useAuth";
 import { Disc3, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import verifiedNormal from "@/assets/verified-normal.png";
+import verifiedGold from "@/assets/verified-gold.png";
 
 interface Album {
   id: string;
@@ -15,6 +17,8 @@ interface Album {
   artist: {
     username: string;
     display_name: string | null;
+    verified: boolean | null;
+    verified_tier: string | null;
   };
 }
 
@@ -37,7 +41,7 @@ export default function Albums() {
       setLoading(true);
       const { data, error } = await supabase
         .from("albums")
-        .select("*, artist:profiles!albums_artist_id_fkey(username, display_name)")
+        .select("*, artist:profiles!albums_artist_id_fkey(username, display_name, verified, verified_tier)")
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -102,9 +106,18 @@ export default function Albums() {
                   />
                 </div>
                 <h3 className="font-semibold text-foreground truncate mb-1">{album.title}</h3>
-                <p className="text-sm text-muted-foreground truncate">
-                  {album.artist.display_name || album.artist.username}
-                </p>
+                <div className="flex items-center gap-1">
+                  <p className="text-sm text-muted-foreground truncate">
+                    {album.artist.display_name || album.artist.username}
+                  </p>
+                  {album.artist.verified && (
+                    <img 
+                      src={album.artist.verified_tier === "gold" ? verifiedGold : verifiedNormal} 
+                      alt="Vérifié" 
+                      className="w-4 h-4 flex-shrink-0" 
+                    />
+                  )}
+                </div>
               </div>
             ))}
           </div>

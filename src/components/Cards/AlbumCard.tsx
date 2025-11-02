@@ -7,6 +7,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import defaultCover from "@/assets/default-cover.png";
+import verifiedNormal from "@/assets/verified-normal.png";
+import verifiedGold from "@/assets/verified-gold.png";
 
 interface AlbumCardProps {
   id: string;
@@ -15,10 +17,12 @@ interface AlbumCardProps {
   coverUrl: string;
   trackCount: number;
   artistId?: string;
+  artistVerified?: boolean;
+  artistVerifiedTier?: string | null;
   onDelete?: () => void;
 }
 
-const AlbumCardComponent = ({ id, title, artist, coverUrl, trackCount, artistId, onDelete }: AlbumCardProps) => {
+const AlbumCardComponent = ({ id, title, artist, coverUrl, trackCount, artistId, artistVerified, artistVerifiedTier, onDelete }: AlbumCardProps) => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
@@ -101,7 +105,16 @@ const AlbumCardComponent = ({ id, title, artist, coverUrl, trackCount, artistId,
       </div>
       
       <h3 className="font-semibold text-foreground truncate mb-1">{title}</h3>
-      <p className="text-sm text-muted-foreground truncate">{artist}</p>
+      <div className="flex items-center gap-1 mb-1">
+        <p className="text-sm text-muted-foreground truncate">{artist}</p>
+        {artistVerified && (
+          <img 
+            src={artistVerifiedTier === "gold" ? verifiedGold : verifiedNormal} 
+            alt="Vérifié" 
+            className="w-4 h-4 flex-shrink-0" 
+          />
+        )}
+      </div>
       
       <div className="flex items-center justify-between mt-2">
         <div className="flex items-center gap-1 text-xs text-muted-foreground">

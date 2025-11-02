@@ -8,6 +8,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import defaultCover from "@/assets/default-cover.png";
+import verifiedNormal from "@/assets/verified-normal.png";
+import verifiedGold from "@/assets/verified-gold.png";
 
 interface TrackCardProps {
   id?: string;
@@ -20,10 +22,12 @@ interface TrackCardProps {
   lyrics?: string;
   downloadable?: boolean;
   artistId?: string;
+  artistVerified?: boolean;
+  artistVerifiedTier?: string | null;
   onDelete?: () => void;
 }
 
-const TrackCardComponent = ({ id, title, artist, cover, audioUrl, onClick, onPlay, lyrics, downloadable, artistId, onDelete }: TrackCardProps) => {
+const TrackCardComponent = ({ id, title, artist, cover, audioUrl, onClick, onPlay, lyrics, downloadable, artistId, artistVerified, artistVerifiedTier, onDelete }: TrackCardProps) => {
   const [playlistDialogOpen, setPlaylistDialogOpen] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
@@ -140,7 +144,16 @@ const TrackCardComponent = ({ id, title, artist, cover, audioUrl, onClick, onPla
         </div>
         
         <h3 className="font-semibold text-foreground truncate mb-1">{title}</h3>
-        <p className="text-sm text-muted-foreground truncate">{artist}</p>
+        <div className="flex items-center gap-1 mb-1">
+          <p className="text-sm text-muted-foreground truncate">{artist}</p>
+          {artistVerified && (
+            <img 
+              src={artistVerifiedTier === "gold" ? verifiedGold : verifiedNormal} 
+              alt="Vérifié" 
+              className="w-4 h-4 flex-shrink-0" 
+            />
+          )}
+        </div>
 
         <div className="flex gap-2 mt-2">
           <Button

@@ -21,6 +21,8 @@ interface Track {
   downloadable?: boolean;
   artistId?: string;
   albumId?: string;
+  artistVerified?: boolean;
+  artistVerifiedTier?: string | null;
 }
 
 interface Album {
@@ -30,6 +32,8 @@ interface Album {
   artist: string;
   trackCount: number;
   artistId: string;
+  artistVerified: boolean;
+  artistVerifiedTier: string | null;
 }
 
 interface Artist {
@@ -77,7 +81,7 @@ const Index = () => {
     // Load albums
     const { data: albumsData } = await supabase
       .from("albums")
-      .select("*, profiles!inner(username, display_name)")
+      .select("*, profiles!inner(username, display_name, verified, verified_tier)")
       .order("created_at", { ascending: false })
       .limit(displayedAlbumsCount);
 
@@ -96,6 +100,8 @@ const Index = () => {
             artist: album.profiles.display_name || album.profiles.username,
             trackCount: count || 0,
             artistId: album.artist_id,
+            artistVerified: album.profiles.verified || false,
+            artistVerifiedTier: album.profiles.verified_tier,
           };
         })
       );
@@ -113,7 +119,7 @@ const Index = () => {
     // Load singles (tracks without album)
     const { data: tracksData } = await supabase
       .from("tracks")
-      .select("*, profiles!inner(username, display_name, avatar_url)")
+      .select("*, profiles!inner(username, display_name, avatar_url, verified, verified_tier)")
       .is("album_id", null)
       .order("created_at", { ascending: false })
       .limit(displayedSinglesCount);
@@ -129,6 +135,8 @@ const Index = () => {
         downloadable: t.downloadable,
         artistId: t.artist_id,
         albumId: t.album_id,
+        artistVerified: t.profiles.verified || false,
+        artistVerifiedTier: t.profiles.verified_tier,
       }));
       setTracks(formattedTracks);
       setSingleTracks(formattedTracks);
@@ -165,6 +173,7 @@ const Index = () => {
             followers: count ? `${count}` : "0",
             username: a.username,
             verified: a.verified || false,
+            verified_tier: a.verified_tier,
           };
         })
       );

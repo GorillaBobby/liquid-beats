@@ -88,9 +88,11 @@ export const Sidebar = () => {
   return <aside className="hidden md:flex fixed left-0 top-0 h-screen w-64 flex-col bg-glass/50 backdrop-blur-glass border-r border-glass-border z-40">
       <div className="p-6">
         <div className="mb-8">
-          <h1 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-            LiquidBeats
-          </h1>
+          <img
+            src={new URL("@/assets/logo.png", import.meta.url).href}
+            alt="LiquidBeats"
+            className="h-12"
+          />
         </div>
         
         <nav className="space-y-2">

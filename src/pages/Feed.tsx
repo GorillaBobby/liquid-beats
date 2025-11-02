@@ -23,6 +23,8 @@ interface Track {
   lyrics?: string;
   artistId?: string;
   downloadable?: boolean;
+  artistVerified?: boolean;
+  artistVerifiedTier?: string | null;
 }
 
 interface Artist {
@@ -41,6 +43,8 @@ interface Album {
   artist: string;
   trackCount: number;
   artistId: string;
+  artistVerified?: boolean;
+  artistVerifiedTier?: string | null;
 }
 
 interface FeedCategory {
@@ -158,7 +162,7 @@ export default function Feed() {
   const getRecentlyPlayed = async (): Promise<Track[]> => {
     const { data } = await supabase
       .from("listening_history")
-      .select("tracks!inner(*, profiles!inner(username, display_name))")
+      .select("tracks!inner(*, profiles!inner(username, display_name, verified, verified_tier))")
       .eq("user_id", user!.id)
       .order("played_at", { ascending: false })
       .limit(10);
@@ -178,6 +182,8 @@ export default function Feed() {
           lyrics: item.tracks.lyrics,
           artistId: item.tracks.artist_id,
           downloadable: item.tracks.downloadable,
+          artistVerified: item.tracks.profiles.verified || false,
+          artistVerifiedTier: item.tracks.profiles.verified_tier,
         });
       }
     });
@@ -208,7 +214,7 @@ export default function Feed() {
   const getLikedTracks = async (): Promise<Track[]> => {
     const { data } = await supabase
       .from("likes")
-      .select("tracks!inner(*, profiles!inner(username, display_name))")
+      .select("tracks!inner(*, profiles!inner(username, display_name, verified, verified_tier))")
       .eq("user_id", user!.id)
       .order("created_at", { ascending: false })
       .limit(6);
@@ -225,6 +231,8 @@ export default function Feed() {
       lyrics: item.tracks.lyrics,
       artistId: item.tracks.artist_id,
       downloadable: item.tracks.downloadable,
+      artistVerified: item.tracks.profiles.verified || false,
+      artistVerifiedTier: item.tracks.profiles.verified_tier,
     }));
   };
 
@@ -242,7 +250,7 @@ export default function Feed() {
 
     const { data } = await supabase
       .from("tracks")
-      .select("*, profiles!inner(username, display_name)")
+      .select("*, profiles!inner(username, display_name, verified, verified_tier)")
       .in("artist_id", followingIds)
       .gte("created_at", yesterday.toISOString())
       .order("created_at", { ascending: false })
@@ -260,6 +268,8 @@ export default function Feed() {
       lyrics: track.lyrics,
       artistId: track.artist_id,
       downloadable: track.downloadable,
+      artistVerified: track.profiles.verified || false,
+      artistVerifiedTier: track.profiles.verified_tier,
     }));
   };
 
@@ -276,7 +286,7 @@ export default function Feed() {
 
     const { data: albumsData } = await supabase
       .from("albums")
-      .select("*, artist:profiles!albums_artist_id_fkey(username, display_name)")
+      .select("*, artist:profiles!albums_artist_id_fkey(username, display_name, verified, verified_tier)")
       .in("id", albumIds)
       .limit(6);
 
@@ -296,6 +306,8 @@ export default function Feed() {
           artist: album.artist.display_name || album.artist.username,
           trackCount: count || 0,
           artistId: album.artist_id,
+          artistVerified: album.artist.verified || false,
+          artistVerifiedTier: album.artist.verified_tier,
         };
       })
     );
@@ -315,7 +327,7 @@ export default function Feed() {
 
     const { data } = await supabase
       .from("tracks")
-      .select("*, profiles!inner(username, display_name)")
+      .select("*, profiles!inner(username, display_name, verified, verified_tier)")
       .in("artist_id", followingIds)
       .order("plays_count", { ascending: false })
       .limit(6);
@@ -332,6 +344,8 @@ export default function Feed() {
       lyrics: track.lyrics,
       artistId: track.artist_id,
       downloadable: track.downloadable,
+      artistVerified: track.profiles.verified || false,
+      artistVerifiedTier: track.profiles.verified_tier,
     }));
   };
 

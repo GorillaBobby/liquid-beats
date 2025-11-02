@@ -192,9 +192,11 @@ export default function Auth() {
     <div className="min-h-screen flex items-center justify-center bg-background p-6">
       <Card className="w-full max-w-md p-8 bg-glass/80 backdrop-blur-glass border-glass-border shadow-glass">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent mb-2">
-            LiquidBeats
-          </h1>
+          <img
+            src={new URL("@/assets/logo.png", import.meta.url).href}
+            alt="LiquidBeats"
+            className="h-16 mx-auto mb-4"
+          />
           <p className="text-muted-foreground">
             {isLogin ? "Connectez-vous à votre compte" : "Créez votre compte"}
           </p>

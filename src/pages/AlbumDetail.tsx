@@ -8,6 +8,8 @@ import { Play, Disc3, Plus, Share2, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { AddToPlaylistDialog } from "@/components/Track/AddToPlaylistDialog";
+import verifiedNormal from "@/assets/verified-normal.png";
+import verifiedGold from "@/assets/verified-gold.png";
 
 interface Track {
   id: string;
@@ -28,6 +30,8 @@ interface Album {
     username: string;
     display_name: string | null;
     avatar_url: string | null;
+    verified: boolean | null;
+    verified_tier: string | null;
   };
 }
 
@@ -58,7 +62,7 @@ export default function AlbumDetail() {
       setLoading(true);
       const { data: albumData, error: albumError } = await supabase
         .from("albums")
-        .select("*, artist:profiles!albums_artist_id_fkey(*)")
+        .select("*, artist:profiles!albums_artist_id_fkey(id, username, display_name, avatar_url, verified, verified_tier)")
         .eq("id", id)
         .single();
 
@@ -192,9 +196,16 @@ export default function AlbumDetail() {
                 />
                 <span
                   onClick={() => navigate(`/profile/${album.artist.username}`)}
-                  className="font-semibold cursor-pointer hover:underline"
+                  className="font-semibold cursor-pointer hover:underline flex items-center gap-1"
                 >
                   {album.artist.display_name || album.artist.username}
+                  {album.artist.verified && (
+                    <img 
+                      src={album.artist.verified_tier === "gold" ? verifiedGold : verifiedNormal} 
+                      alt="Vérifié" 
+                      className="w-4 h-4" 
+                    />
+                  )}
                 </span>
                 {album.release_date && (
                   <>

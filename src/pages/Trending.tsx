@@ -20,6 +20,8 @@ interface Track {
   lyrics?: string;
   downloadable?: boolean;
   artistId?: string;
+  artistVerified?: boolean;
+  artistVerifiedTier?: string | null;
 }
 
 export default function Trending() {
@@ -78,7 +80,7 @@ export default function Trending() {
       setLoading(true);
       const { data: tracksData, count } = await supabase
         .from("tracks")
-        .select("*, profiles!inner(username, display_name, avatar_url)", { count: 'exact' })
+        .select("*, profiles!inner(username, display_name, avatar_url, verified, verified_tier)", { count: 'exact' })
         .order("plays_count", { ascending: false })
         .limit(100); // Load up to 100 tracks total
 
@@ -93,6 +95,8 @@ export default function Trending() {
           lyrics: t.lyrics,
           downloadable: t.downloadable,
           artistId: t.artist_id,
+          artistVerified: t.profiles.verified || false,
+          artistVerifiedTier: t.profiles.verified_tier,
         }));
         setTracks(formattedTracks);
         setHasMore(formattedTracks.length > displayLimit);
