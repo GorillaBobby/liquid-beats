@@ -39,16 +39,15 @@ export const AudioPlayerProvider = ({ children }: { children: ReactNode }) => {
   const [playlist, setPlaylistState] = useState<Track[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const audioRef = useRef<HTMLAudioElement>(null);
+  const playCountIncrementedRef = useRef<string | null>(null);
+  const playStartTimeRef = useRef<number>(0);
 
-  const setCurrentTrack = async (track: Track) => {
+  const setCurrentTrack = (track: Track) => {
     setCurrentTrackState(track);
     
-    // Increment play count when track starts playing
-    try {
-      await supabase.rpc('increment_track_plays', { track_id: track.id });
-    } catch (error) {
-      console.error('Error incrementing play count:', error);
-    }
+    // Reset play count tracking for new track
+    playCountIncrementedRef.current = null;
+    playStartTimeRef.current = 0;
     
     if (audioRef.current) {
       audioRef.current.src = track.audioUrl;
@@ -127,10 +126,29 @@ export const AudioPlayerProvider = ({ children }: { children: ReactNode }) => {
       {children}
       <audio
         ref={audioRef}
-        onTimeUpdate={() => setCurrentTime(audioRef.current?.currentTime || 0)}
+        onTimeUpdate={() => {
+          const time = audioRef.current?.currentTime || 0;
+          setCurrentTime(time);
+          
+          // Increment play count after 10 seconds, only once per track
+          if (
+            currentTrack &&
+            time >= 10 &&
+            playCountIncrementedRef.current !== currentTrack.id
+          ) {
+            playCountIncrementedRef.current = currentTrack.id;
+            supabase.rpc('increment_track_plays', { track_id: currentTrack.id })
+              .then(({ error }) => {
+                if (error) console.error('Error incrementing play count:', error);
+              });
+          }
+        }}
         onLoadedMetadata={() => setDuration(audioRef.current?.duration || 0)}
         onEnded={playNext}
-        onPlay={() => setIsPlaying(true)}
+        onPlay={() => {
+          setIsPlaying(true);
+          playStartTimeRef.current = Date.now();
+        }}
         onPause={() => setIsPlaying(false)}
         preload="auto"
         crossOrigin="anonymous"
