@@ -41,11 +41,11 @@ export function FeedbackDialog() {
     setLoading(true);
 
     try {
-      const { error } = await supabase.from("feedbacks").insert({
-        user_id: user.id,
-        subject: subject.trim(),
-        message: message.trim(),
-        status: "pending",
+      const { error } = await supabase.functions.invoke('submit-feedback', {
+        body: {
+          subject: subject.trim(),
+          message: message.trim(),
+        },
       });
 
       if (error) throw error;

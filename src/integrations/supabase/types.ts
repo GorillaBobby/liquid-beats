@@ -589,6 +589,39 @@ export type Database = {
           },
         ]
       }
+      track_reports: {
+        Row: {
+          created_at: string
+          details: string | null
+          id: string
+          reason: string
+          reporter_id: string
+          status: string
+          track_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          details?: string | null
+          id?: string
+          reason: string
+          reporter_id: string
+          status?: string
+          track_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          details?: string | null
+          id?: string
+          reason?: string
+          reporter_id?: string
+          status?: string
+          track_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       tracks: {
         Row: {
           album_id: string | null

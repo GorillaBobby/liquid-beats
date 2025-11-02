@@ -9,6 +9,7 @@ import { useAudioPlayer } from "@/contexts/AudioPlayerContext";
 import { Play, Share2, Download, Plus, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { AddToPlaylistDialog } from "@/components/Track/AddToPlaylistDialog";
+import { ReportTrackDialog } from "@/components/Track/ReportTrackDialog";
 
 interface Track {
   id: string;
@@ -224,6 +225,10 @@ export default function TrackDetail() {
                     <Download className="w-5 h-5 mr-2" />
                     Télécharger
                   </Button>
+                )}
+
+                {user && (
+                  <ReportTrackDialog trackId={track.id} trackTitle={track.title} />
                 )}
               </div>
 
