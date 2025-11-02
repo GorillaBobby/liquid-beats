@@ -97,19 +97,21 @@ export const Sidebar = () => {
           
           <div className="pt-4 border-t border-glass-border mt-4 space-y-2">
             <FeedbackDialog />
-            <a
-              href="/Liquid-Beats_0.3.apk"
-              download="Liquid-Beats_0.3.apk"
-              className="w-full"
-            >
-              <Button
-                variant="outline"
-                className="w-full justify-start gap-3 bg-glass/30 border-glass-border hover:bg-glass-hover"
+            <div className="pt-2">
+              <a
+                href="/Liquid-Beats_0.3.apk"
+                download="Liquid-Beats_0.3.apk"
+                className="w-full"
               >
-                <Download className="w-5 h-5" />
-                <span>Installer la version Android</span>
-              </Button>
-            </a>
+                <Button
+                  variant="outline"
+                  className="w-full justify-start gap-3 bg-glass/30 border-glass-border hover:bg-glass-hover"
+                >
+                  <Download className="w-5 h-5" />
+                  <span>Version Android</span>
+                </Button>
+              </a>
+            </div>
           </div>
         </nav>
       </div>
