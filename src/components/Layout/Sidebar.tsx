@@ -1,4 +1,4 @@
-import { Home, TrendingUp, Radio, ListMusic, User, Search, Inbox, Shield, Disc3, MessageSquare, LogOut } from "lucide-react";
+import { Home, TrendingUp, Radio, ListMusic, User, Search, Inbox, Shield, Disc3, MessageSquare, LogOut, Download } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
@@ -95,8 +95,21 @@ export const Sidebar = () => {
             );
           })}
           
-          <div className="pt-4 border-t border-glass-border mt-4">
+          <div className="pt-4 border-t border-glass-border mt-4 space-y-2">
             <FeedbackDialog />
+            <a
+              href="/Liquid-Beats_0.3.apk"
+              download="Liquid-Beats_0.3.apk"
+              className="w-full"
+            >
+              <Button
+                variant="outline"
+                className="w-full justify-start gap-3 bg-glass/30 border-glass-border hover:bg-glass-hover"
+              >
+                <Download className="w-5 h-5" />
+                <span>Installer la version Android</span>
+              </Button>
+            </a>
           </div>
         </nav>
       </div>
