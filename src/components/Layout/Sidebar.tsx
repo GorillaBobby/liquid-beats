@@ -111,7 +111,7 @@ export const Sidebar = () => {
               <a href="/Liquid-Beats_0.3.apk" download="Liquid-Beats_0.3.apk" className="w-full">
                 <Button variant="outline" className="w-full justify-start gap-3 bg-glass/30 border-glass-border hover:bg-glass-hover">
                   <Download className="w-5 h-5" />
-                  <span>Installer  </span>
+                  <span>Installer l'apk</span>
                 </Button>
               </a>
             </div>
