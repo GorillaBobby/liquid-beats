@@ -44,6 +44,38 @@ export type Database = {
         }
         Relationships: []
       }
+      actus_reactions: {
+        Row: {
+          actus_id: string
+          created_at: string
+          emoji: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          actus_id: string
+          created_at?: string
+          emoji: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          actus_id?: string
+          created_at?: string
+          emoji?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "actus_reactions_actus_id_fkey"
+            columns: ["actus_id"]
+            isOneToOne: false
+            referencedRelation: "actus"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       admin_announcements: {
         Row: {
           created_at: string

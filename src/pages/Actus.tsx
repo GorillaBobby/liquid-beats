@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Sidebar } from "@/components/Layout/Sidebar";
 import { Card } from "@/components/ui/card";
 import { OptimizedImage } from "@/components/ui/optimized-image";
+import { ActusReactions } from "@/components/Actus/ActusReactions";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Newspaper } from "lucide-react";
@@ -71,6 +72,7 @@ const Actus = () => {
                       {actu.author && ` • Par ${actu.author.display_name || actu.author.username}`}
                     </p>
                     <p className="text-foreground whitespace-pre-wrap">{actu.description}</p>
+                    <ActusReactions actusId={actu.id} />
                   </div>
                 </Card>
               ))}
