@@ -26,6 +26,7 @@ interface Profile {
   avatar_url: string | null;
   verified: boolean;
   verified_tier: string | null;
+  custom_role: string | null;
 }
 
 interface Track {
@@ -302,7 +303,7 @@ export default function Profile() {
                   />
                 )}
                 <span className="px-3 py-1 rounded-full text-sm bg-gradient-primary text-primary-foreground">
-                  {profile.user_type === "artist" ? "Artiste" : "Fan"}
+                  {profile.custom_role || (profile.user_type === "artist" ? "Artiste" : "Fan")}
                 </span>
               </div>
               

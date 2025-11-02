@@ -458,6 +458,7 @@ export type Database = {
           avatar_url: string | null
           bio: string | null
           created_at: string | null
+          custom_role: string | null
           display_name: string | null
           id: string
           updated_at: string | null
@@ -470,6 +471,7 @@ export type Database = {
           avatar_url?: string | null
           bio?: string | null
           created_at?: string | null
+          custom_role?: string | null
           display_name?: string | null
           id: string
           updated_at?: string | null
@@ -482,6 +484,7 @@ export type Database = {
           avatar_url?: string | null
           bio?: string | null
           created_at?: string | null
+          custom_role?: string | null
           display_name?: string | null
           id?: string
           updated_at?: string | null
@@ -568,6 +571,7 @@ export type Database = {
           duration: number | null
           id: string
           lyrics: string | null
+          original_artist_name: string | null
           plays_count: number | null
           title: string
         }
@@ -582,6 +586,7 @@ export type Database = {
           duration?: number | null
           id?: string
           lyrics?: string | null
+          original_artist_name?: string | null
           plays_count?: number | null
           title: string
         }
@@ -596,6 +601,7 @@ export type Database = {
           duration?: number | null
           id?: string
           lyrics?: string | null
+          original_artist_name?: string | null
           plays_count?: number | null
           title?: string
         }
