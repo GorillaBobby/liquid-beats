@@ -20,7 +20,29 @@ interface UploadTrackDialogProps {
 interface TrackFile {
   file: File;
   title: string;
+  duration?: number;
 }
+
+const MAX_DURATION_SECONDS = 1200; // 20 minutes
+
+const validateAudioDuration = (file: File): Promise<number> => {
+  return new Promise((resolve, reject) => {
+    const audio = new Audio();
+    const url = URL.createObjectURL(file);
+    
+    audio.addEventListener('loadedmetadata', () => {
+      URL.revokeObjectURL(url);
+      resolve(audio.duration);
+    });
+    
+    audio.addEventListener('error', () => {
+      URL.revokeObjectURL(url);
+      reject(new Error('Impossible de lire le fichier audio'));
+    });
+    
+    audio.src = url;
+  });
+};
 
 export const UploadTrackDialog = ({ open, onOpenChange, onUploadSuccess }: UploadTrackDialogProps) => {
   const { user } = useAuth();
@@ -71,6 +93,18 @@ export const UploadTrackDialog = ({ open, onOpenChange, onUploadSuccess }: Uploa
 
     try {
       setUploading(true);
+
+      // Validate audio duration
+      const duration = await validateAudioDuration(audioFile);
+      if (duration > MAX_DURATION_SECONDS) {
+        toast({
+          variant: "destructive",
+          title: "Durée trop longue",
+          description: `La musique ne doit pas dépasser 20 minutes. Durée actuelle: ${Math.floor(duration / 60)}:${Math.floor(duration % 60).toString().padStart(2, '0')}`
+        });
+        setUploading(false);
+        return;
+      }
 
       // Upload audio without compression - preserves original quality
       const audioPath = `${user.id}/${Date.now()}_${audioFile.name}`;
@@ -145,6 +179,31 @@ export const UploadTrackDialog = ({ open, onOpenChange, onUploadSuccess }: Uploa
     try {
       setUploading(true);
 
+      // Validate all track durations before uploading
+      for (let i = 0; i < trackFiles.length; i++) {
+        const track = trackFiles[i];
+        try {
+          const duration = await validateAudioDuration(track.file);
+          if (duration > MAX_DURATION_SECONDS) {
+            toast({
+              variant: "destructive",
+              title: "Durée trop longue",
+              description: `La musique "${track.title}" ne doit pas dépasser 20 minutes. Durée: ${Math.floor(duration / 60)}:${Math.floor(duration % 60).toString().padStart(2, '0')}`
+            });
+            setUploading(false);
+            return;
+          }
+        } catch (error) {
+          toast({
+            variant: "destructive",
+            title: "Erreur de validation",
+            description: `Impossible de valider la durée de "${track.title}"`
+          });
+          setUploading(false);
+          return;
+        }
+      }
+
       // Upload album cover if provided
       let albumCoverUrl = null;
       if (albumCoverFile) {
@@ -176,33 +235,42 @@ export const UploadTrackDialog = ({ open, onOpenChange, onUploadSuccess }: Uploa
       if (albumError) throw albumError;
 
       // Upload all tracks without compression - preserves original quality
+      let uploadedCount = 0;
       for (const trackFile of trackFiles) {
-        const audioPath = `${user.id}/${Date.now()}_${trackFile.file.name}`;
-        const { error: audioError } = await supabase.storage
-          .from("audio-files")
-          .upload(audioPath, trackFile.file, {
-            contentType: trackFile.file.type, // Preserves original format (FLAC, WAV, etc.)
-            cacheControl: '3600',
-            upsert: false
+        try {
+          const audioPath = `${user.id}/${Date.now()}_${trackFile.file.name}`;
+          const { error: audioError } = await supabase.storage
+            .from("audio-files")
+            .upload(audioPath, trackFile.file, {
+              contentType: trackFile.file.type, // Preserves original format (FLAC, WAV, etc.)
+              cacheControl: '3600',
+              upsert: false
+            });
+
+          if (audioError) throw new Error(`Erreur upload "${trackFile.title}": ${audioError.message}`);
+
+          const { data: { publicUrl: audioUrl } } = supabase.storage
+            .from("audio-files")
+            .getPublicUrl(audioPath);
+
+          // Create track record
+          const { error: trackError } = await supabase.from("tracks").insert({
+            artist_id: user.id,
+            title: trackFile.title,
+            audio_url: audioUrl,
+            cover_url: albumCoverUrl,
+            album_id: album.id,
+            downloadable,
           });
 
-        if (audioError) throw audioError;
-
-        const { data: { publicUrl: audioUrl } } = supabase.storage
-          .from("audio-files")
-          .getPublicUrl(audioPath);
-
-        // Create track record
-        const { error: trackError } = await supabase.from("tracks").insert({
-          artist_id: user.id,
-          title: trackFile.title,
-          audio_url: audioUrl,
-          cover_url: albumCoverUrl,
-          album_id: album.id,
-          downloadable,
-        });
-
-        if (trackError) throw trackError;
+          if (trackError) throw new Error(`Erreur création track "${trackFile.title}": ${trackError.message}`);
+          
+          uploadedCount++;
+        } catch (error: any) {
+          // Clean up album if track upload fails
+          await supabase.from("albums").delete().eq("id", album.id);
+          throw new Error(`${error.message}. Album non créé.`);
+        }
       }
 
       toast({
