@@ -10,7 +10,7 @@ import { TrackCard } from "@/components/Cards/TrackCard";
 import { AlbumCard } from "@/components/Cards/AlbumCard";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { Upload, LogOut, MessageCircle, UserPlus, UserMinus, Edit, Trash2, ArrowLeft } from "lucide-react";
+import { Upload, LogOut, MessageCircle, UserPlus, UserMinus, Edit, Trash2, ArrowLeft, RefreshCw } from "lucide-react";
 import { UploadTrackDialog } from "@/components/Upload/UploadTrackDialog";
 import { EditProfileDialog } from "@/components/Profile/EditProfileDialog";
 import { DeleteAccountDialog } from "@/components/Profile/DeleteAccountDialog";
@@ -222,6 +222,34 @@ export default function Profile() {
     navigate(`/messages/${profile?.username}`);
   };
 
+  const handleUserTypeChange = async () => {
+    if (!user || !profile) return;
+
+    const newUserType = profile.user_type === "artist" ? "fan" : "artist";
+
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .update({ user_type: newUserType })
+        .eq("id", user.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Type de compte modifié !",
+        description: `Vous êtes maintenant ${newUserType === "artist" ? "artiste" : "fan"}`,
+      });
+
+      loadProfile();
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: error.message,
+      });
+    }
+  };
+
   if (authLoading || loading) {
     return <div className="min-h-screen bg-background flex items-center justify-center">Chargement...</div>;
   }
@@ -299,6 +327,14 @@ export default function Profile() {
                     >
                       <Edit className="w-4 h-4 mr-2" />
                       Modifier le profil
+                    </Button>
+                    <Button
+                      onClick={handleUserTypeChange}
+                      variant="outline"
+                      className="bg-glass/30 border-glass-border"
+                    >
+                      <RefreshCw className="w-4 h-4 mr-2" />
+                      Passer en {profile.user_type === "artist" ? "Fan" : "Artiste"}
                     </Button>
                     {profile.user_type === "artist" && (
                       <Button
