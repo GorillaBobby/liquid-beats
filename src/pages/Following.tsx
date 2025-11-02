@@ -17,7 +17,7 @@ interface User {
 
 export default function Following() {
   const { username } = useParams();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [following, setFollowing] = useState<User[]>([]);
@@ -25,13 +25,15 @@ export default function Following() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (authLoading) return;
+    
     if (!user) {
       navigate("/auth");
       return;
     }
     loadFollowing();
     loadMyFollowing();
-  }, [user, username]);
+  }, [user, username, authLoading]);
 
   const loadFollowing = async () => {
     try {
@@ -108,7 +110,7 @@ export default function Following() {
     }
   };
 
-  if (loading) {
+  if (authLoading || loading) {
     return <div className="min-h-screen bg-background flex items-center justify-center">Chargement...</div>;
   }
 
