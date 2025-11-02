@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useRef, ReactNode } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Track {
   id: string;
@@ -39,8 +40,16 @@ export const AudioPlayerProvider = ({ children }: { children: ReactNode }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const audioRef = useRef<HTMLAudioElement>(null);
 
-  const setCurrentTrack = (track: Track) => {
+  const setCurrentTrack = async (track: Track) => {
     setCurrentTrackState(track);
+    
+    // Increment play count when track starts playing
+    try {
+      await supabase.rpc('increment_track_plays', { track_id: track.id });
+    } catch (error) {
+      console.error('Error incrementing play count:', error);
+    }
+    
     if (audioRef.current) {
       audioRef.current.src = track.audioUrl;
       audioRef.current.load();

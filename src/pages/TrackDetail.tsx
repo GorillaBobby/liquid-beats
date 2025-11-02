@@ -77,8 +77,6 @@ export default function TrackDetail() {
   const handlePlay = () => {
     if (track) {
       setPlaylist([track], 0);
-      // Increment play count
-      supabase.rpc("increment_track_plays", { track_id: track.id });
     }
   };
 

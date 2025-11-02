@@ -36,11 +36,6 @@ const TrackCardComponent = ({ id, title, artist, cover, audioUrl, onClick, onPla
     } else {
       onClick();
     }
-    
-    // Increment play count
-    if (id && audioUrl) {
-      supabase.rpc("increment_track_plays", { track_id: id });
-    }
   };
 
   const handleDownload = async (e: React.MouseEvent) => {

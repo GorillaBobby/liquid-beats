@@ -361,7 +361,6 @@ export default function Feed() {
         user_id: user!.id,
         track_id: tracks[index].id,
       });
-      supabase.rpc("increment_track_plays", { track_id: tracks[index].id });
     }
   };
 
