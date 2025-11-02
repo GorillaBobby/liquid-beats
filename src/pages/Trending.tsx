@@ -55,13 +55,15 @@ export default function Trending() {
           table: 'tracks'
         },
         (payload) => {
-          setTracks((currentTracks) => 
-            currentTracks.map((track) => 
+          setTracks((currentTracks) => {
+            const updatedTracks = currentTracks.map((track) => 
               track.id === payload.new.id 
                 ? { ...track, plays_count: payload.new.plays_count }
                 : track
-            )
-          );
+            );
+            // Re-trier du plus d'écoutes au moins d'écoutes
+            return updatedTracks.sort((a, b) => b.plays_count - a.plays_count);
+          });
         }
       )
       .subscribe();
