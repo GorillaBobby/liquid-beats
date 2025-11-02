@@ -21,6 +21,8 @@ export const ActusManager = () => {
     description: "",
     image_url: "",
   });
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   const { data: actus } = useQuery({
     queryKey: ["admin-actus"],
@@ -37,9 +39,32 @@ export const ActusManager = () => {
 
   const createMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
+      let imageUrl = data.image_url;
+
+      // Upload image if file is selected
+      if (imageFile) {
+        const fileExt = imageFile.name.split('.').pop();
+        const fileName = `${Math.random()}.${fileExt}`;
+        const filePath = fileName;
+
+        const { error: uploadError } = await supabase.storage
+          .from('actus-images')
+          .upload(filePath, imageFile);
+
+        if (uploadError) throw uploadError;
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('actus-images')
+          .getPublicUrl(filePath);
+
+        imageUrl = publicUrl;
+      }
+
       const { error } = await supabase.from("actus").insert([
         {
-          ...data,
+          title: data.title,
+          description: data.description,
+          image_url: imageUrl,
           author_id: (await supabase.auth.getUser()).data.user?.id,
         },
       ]);
@@ -52,6 +77,8 @@ export const ActusManager = () => {
       queryClient.invalidateQueries({ queryKey: ["actus"] });
       setIsCreating(false);
       setFormData({ title: "", description: "", image_url: "" });
+      setImageFile(null);
+      setImagePreview(null);
     },
     onError: () => {
       toast.error("Erreur lors de la création de l'actu");
@@ -60,9 +87,43 @@ export const ActusManager = () => {
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: typeof formData }) => {
+      let imageUrl = data.image_url;
+
+      // Upload new image if file is selected
+      if (imageFile) {
+        // Delete old image if exists
+        const oldActu = actus?.find(a => a.id === id);
+        if (oldActu?.image_url) {
+          const oldPath = oldActu.image_url.split('/').pop();
+          if (oldPath) {
+            await supabase.storage.from('actus-images').remove([oldPath]);
+          }
+        }
+
+        const fileExt = imageFile.name.split('.').pop();
+        const fileName = `${Math.random()}.${fileExt}`;
+        const filePath = fileName;
+
+        const { error: uploadError } = await supabase.storage
+          .from('actus-images')
+          .upload(filePath, imageFile);
+
+        if (uploadError) throw uploadError;
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('actus-images')
+          .getPublicUrl(filePath);
+
+        imageUrl = publicUrl;
+      }
+
       const { error } = await supabase
         .from("actus")
-        .update(data)
+        .update({
+          title: data.title,
+          description: data.description,
+          image_url: imageUrl,
+        })
         .eq("id", id);
 
       if (error) throw error;
@@ -73,6 +134,8 @@ export const ActusManager = () => {
       queryClient.invalidateQueries({ queryKey: ["actus"] });
       setEditingId(null);
       setFormData({ title: "", description: "", image_url: "" });
+      setImageFile(null);
+      setImagePreview(null);
     },
     onError: () => {
       toast.error("Erreur lors de la mise à jour de l'actu");
@@ -81,6 +144,15 @@ export const ActusManager = () => {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
+      // Delete image from storage
+      const actu = actus?.find(a => a.id === id);
+      if (actu?.image_url) {
+        const imagePath = actu.image_url.split('/').pop();
+        if (imagePath) {
+          await supabase.storage.from('actus-images').remove([imagePath]);
+        }
+      }
+
       const { error } = await supabase.from("actus").delete().eq("id", id);
       if (error) throw error;
     },
@@ -110,6 +182,8 @@ export const ActusManager = () => {
       description: actu.description,
       image_url: actu.image_url || "",
     });
+    setImagePreview(actu.image_url || null);
+    setImageFile(null);
     setIsCreating(true);
   };
 
@@ -117,6 +191,33 @@ export const ActusManager = () => {
     setIsCreating(false);
     setEditingId(null);
     setFormData({ title: "", description: "", image_url: "" });
+    setImageFile(null);
+    setImagePreview(null);
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Check file type
+      const validTypes = ['image/webp', 'image/png', 'image/jpeg', 'image/gif'];
+      if (!validTypes.includes(file.type)) {
+        toast.error("Format d'image non supporté. Utilisez .webp, .png, .jpeg ou .gif");
+        return;
+      }
+
+      // Check file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error("L'image est trop grande. Maximum 5MB");
+        return;
+      }
+
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   return (
@@ -158,16 +259,22 @@ export const ActusManager = () => {
               />
             </div>
             <div>
-              <Label htmlFor="image_url">URL de l'image</Label>
+              <Label htmlFor="image">Image (.webp, .png, .jpeg, .gif)</Label>
               <Input
-                id="image_url"
-                type="url"
-                value={formData.image_url}
-                onChange={(e) =>
-                  setFormData({ ...formData, image_url: e.target.value })
-                }
-                placeholder="https://..."
+                id="image"
+                type="file"
+                accept=".webp,.png,.jpeg,.jpg,.gif"
+                onChange={handleImageChange}
               />
+              {imagePreview && (
+                <div className="mt-4">
+                  <img
+                    src={imagePreview}
+                    alt="Preview"
+                    className="w-full h-48 object-cover rounded-lg"
+                  />
+                </div>
+              )}
             </div>
             <div className="flex gap-2">
               <Button type="submit">
