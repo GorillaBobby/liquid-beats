@@ -102,20 +102,33 @@ export default function Auth() {
         });
         navigate("/");
       } else {
-        // Signup - pass metadata for trigger to create profile
-        const { error: signUpError } = await supabase.auth.signUp({
+        // Signup
+        const { data: authData, error: signUpError } = await supabase.auth.signUp({
           email,
           password,
           options: {
-            data: {
-              username,
-              display_name: displayName || username,
-              user_type: userType,
-            }
+            emailRedirectTo: `${window.location.origin}/`
           }
         });
 
         if (signUpError) throw signUpError;
+        if (!authData.user) throw new Error("Erreur lors de la création du compte");
+
+        // Wait a bit for auth to be fully set up
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        // Create profile
+        const { error: profileError } = await supabase.from("profiles").insert({
+          id: authData.user.id,
+          username: username.trim(),
+          display_name: displayName?.trim() || username.trim(),
+          user_type: userType,
+        });
+
+        if (profileError) {
+          console.error("Profile creation error:", profileError);
+          throw new Error("Erreur lors de la création du profil");
+        }
 
         toast({
           title: "Compte créé !",
