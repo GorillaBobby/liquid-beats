@@ -162,6 +162,15 @@ export default function AlbumDetail() {
           <ArrowLeft className="w-5 h-5" />
         </Button>
         
+        <Button
+          onClick={() => navigate(-1)}
+          variant="ghost"
+          className="mb-6 hidden md:flex"
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Retour
+        </Button>
+        
         <div className="max-w-6xl mx-auto">
           <div className="flex flex-col md:flex-row gap-4 md:gap-8 mb-6 md:mb-8">
             <div className="w-full aspect-square md:w-64 md:h-64 rounded-2xl overflow-hidden shadow-glass flex-shrink-0">

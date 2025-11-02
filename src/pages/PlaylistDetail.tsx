@@ -144,6 +144,15 @@ export default function PlaylistDetail() {
           <ArrowLeft className="w-5 h-5" />
         </Button>
         
+        <Button
+          onClick={() => navigate(-1)}
+          variant="ghost"
+          className="mb-6 hidden md:flex"
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Retour
+        </Button>
+        
         <div className="max-w-6xl mx-auto">
           <div className="flex gap-8 mb-8">
             <img

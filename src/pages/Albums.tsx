@@ -69,6 +69,15 @@ export default function Albums() {
           <ArrowLeft className="w-5 h-5" />
         </Button>
         
+        <Button
+          onClick={() => navigate(-1)}
+          variant="ghost"
+          className="mb-6 hidden md:flex"
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Retour
+        </Button>
+        
         <div className="max-w-7xl mx-auto">
           <div className="mb-8">
             <h1 className="text-4xl font-bold text-foreground mb-2 flex items-center gap-3">

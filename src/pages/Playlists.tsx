@@ -94,6 +94,15 @@ export default function Playlists() {
           <ArrowLeft className="w-5 h-5" />
         </Button>
         
+        <Button
+          onClick={() => navigate(-1)}
+          variant="ghost"
+          className="mb-6 hidden md:flex"
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Retour
+        </Button>
+        
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-4xl font-bold text-foreground mb-2">Mes Playlists</h1>
