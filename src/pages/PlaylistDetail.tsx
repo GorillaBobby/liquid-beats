@@ -13,7 +13,6 @@ interface Track {
   id: string;
   title: string;
   artist: string;
-  originalArtist?: string;
   cover: string;
   audioUrl: string;
   lyrics?: string;
@@ -76,7 +75,6 @@ export default function PlaylistDetail() {
         id: pt.tracks.id,
         title: pt.tracks.title,
         artist: pt.tracks.profiles.display_name || pt.tracks.profiles.username,
-        originalArtist: pt.tracks.original_artist_name,
         cover: pt.tracks.cover_url || "https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?w=400&h=400&fit=crop",
         audioUrl: pt.tracks.audio_url,
         lyrics: pt.tracks.lyrics,

@@ -15,8 +15,6 @@ interface Track {
   cover_url: string | null;
   audio_url: string;
   lyrics: string | null;
-  original_artist_name: string | null;
-  artist_id: string;
 }
 
 interface Album {
@@ -69,24 +67,12 @@ export default function AlbumDetail() {
 
       const { data: tracksData, error: tracksError } = await supabase
         .from("tracks")
-        .select("*, profiles!inner(username, display_name)")
+        .select("*")
         .eq("album_id", id)
         .order("created_at", { ascending: true });
 
       if (tracksError) throw tracksError;
-      
-      const formattedTracks: Track[] = (tracksData || []).map((t: any) => ({
-        id: t.id,
-        title: t.title,
-        cover_url: t.cover_url,
-        audio_url: t.audio_url,
-        lyrics: t.lyrics,
-        original_artist_name: t.original_artist_name,
-        artist_id: t.artist_id,
-        profiles: t.profiles,
-      }));
-      
-      setTracks(formattedTracks as any);
+      setTracks(tracksData || []);
     } catch (error) {
       console.error("Error loading album:", error);
       navigate("/albums");
@@ -97,11 +83,10 @@ export default function AlbumDetail() {
 
   const playAlbum = () => {
     if (tracks.length === 0) return;
-    const playlist = tracks.map((track: any) => ({
+    const playlist = tracks.map(track => ({
       id: track.id,
       title: track.title,
-      artist: track.profiles?.display_name || track.profiles?.username || album?.artist.display_name || album?.artist.username || "",
-      originalArtist: track.original_artist_name,
+      artist: album?.artist.display_name || album?.artist.username || "",
       cover: track.cover_url || album?.cover_url || "",
       audioUrl: track.audio_url,
       lyrics: track.lyrics || "",
@@ -246,11 +231,10 @@ export default function AlbumDetail() {
                 <div
                   className="flex-1 cursor-pointer min-w-0"
                   onClick={() => {
-                    const playlist = tracks.map((t: any) => ({
+                    const playlist = tracks.map(t => ({
                       id: t.id,
                       title: t.title,
-                      artist: t.profiles?.display_name || t.profiles?.username || album.artist.display_name || album.artist.username,
-                      originalArtist: t.original_artist_name,
+                      artist: album.artist.display_name || album.artist.username,
                       cover: t.cover_url || album.cover_url || "",
                       audioUrl: t.audio_url,
                       lyrics: t.lyrics || "",
@@ -261,12 +245,6 @@ export default function AlbumDetail() {
                   <h3 className="font-semibold text-sm md:text-base text-foreground group-hover:text-primary transition-colors truncate">
                     {track.title}
                   </h3>
-                  <p className="text-xs md:text-sm text-foreground truncate">
-                    {(track as any).original_artist_name || (track as any).profiles?.display_name || (track as any).profiles?.username || album.artist.display_name || album.artist.username}
-                  </p>
-                  <p className="text-xs text-muted-foreground truncate">
-                    Posté par {(track as any).profiles?.display_name || (track as any).profiles?.username || album.artist.display_name || album.artist.username}
-                  </p>
                 </div>
                 <div className="flex gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                   <Button

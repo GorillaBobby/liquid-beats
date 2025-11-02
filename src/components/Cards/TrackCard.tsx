@@ -13,7 +13,6 @@ interface TrackCardProps {
   id?: string;
   title: string;
   artist: string;
-  originalArtist?: string;
   cover: string;
   audioUrl?: string;
   onClick: () => void;
@@ -24,7 +23,7 @@ interface TrackCardProps {
   onDelete?: () => void;
 }
 
-const TrackCardComponent = ({ id, title, artist, originalArtist, cover, audioUrl, onClick, onPlay, lyrics, downloadable, artistId, onDelete }: TrackCardProps) => {
+const TrackCardComponent = ({ id, title, artist, cover, audioUrl, onClick, onPlay, lyrics, downloadable, artistId, onDelete }: TrackCardProps) => {
   const [playlistDialogOpen, setPlaylistDialogOpen] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
@@ -146,8 +145,7 @@ const TrackCardComponent = ({ id, title, artist, originalArtist, cover, audioUrl
         </div>
         
         <h3 className="font-semibold text-foreground truncate mb-1">{title}</h3>
-        <p className="text-base text-foreground truncate">{originalArtist || artist}</p>
-        <p className="text-xs text-muted-foreground truncate">Posté par {artist}</p>
+        <p className="text-sm text-muted-foreground truncate">{artist}</p>
 
         <div className="flex gap-2 mt-2">
           <Button
