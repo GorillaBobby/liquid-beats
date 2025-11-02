@@ -91,6 +91,24 @@ export const UploadTrackDialog = ({ open, onOpenChange, onUploadSuccess }: Uploa
       return;
     }
 
+    // Validate track data
+    const { trackSchema } = await import("@/lib/validations");
+    const validation = trackSchema.safeParse({ 
+      title, 
+      artistName, 
+      description, 
+      lyrics 
+    });
+    
+    if (!validation.success) {
+      toast({ 
+        variant: "destructive", 
+        title: "Erreur de validation", 
+        description: validation.error.errors[0].message 
+      });
+      return;
+    }
+
     try {
       setUploading(true);
 

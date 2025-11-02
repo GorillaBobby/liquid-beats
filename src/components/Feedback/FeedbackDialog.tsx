@@ -29,6 +29,15 @@ export function FeedbackDialog() {
       return;
     }
 
+    // Validate feedback content
+    const { feedbackSchema } = await import("@/lib/validations");
+    const validation = feedbackSchema.safeParse({ subject, message });
+    
+    if (!validation.success) {
+      toast.error(validation.error.errors[0].message);
+      return;
+    }
+
     setLoading(true);
 
     try {

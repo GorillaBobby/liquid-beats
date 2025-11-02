@@ -50,6 +50,22 @@ export const EditProfileDialog = ({ open, onOpenChange, onSuccess, currentProfil
   const handleSave = async () => {
     if (!user) return;
 
+    // Validate profile data
+    const { profileSchema } = await import("@/lib/validations");
+    const validation = profileSchema.safeParse({ 
+      displayName, 
+      bio 
+    });
+    
+    if (!validation.success) {
+      toast({
+        variant: "destructive",
+        title: "Erreur de validation",
+        description: validation.error.errors[0].message,
+      });
+      return;
+    }
+
     try {
       setSaving(true);
 

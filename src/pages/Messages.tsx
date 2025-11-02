@@ -118,6 +118,20 @@ export default function Messages() {
     if (!user || !recipient || !newMessage.trim()) return;
 
     try {
+      // Validate message content
+      const validation = await import("@/lib/validations").then(mod => 
+        mod.messageSchema.safeParse({ content: newMessage })
+      );
+      
+      if (!validation.success) {
+        toast({ 
+          variant: "destructive", 
+          title: "Erreur de validation", 
+          description: validation.error.errors[0].message 
+        });
+        return;
+      }
+
       setSending(true);
       const { error } = await supabase.from("messages").insert({
         sender_id: user.id,

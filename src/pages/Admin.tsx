@@ -5,19 +5,13 @@ import { Sidebar } from "@/components/Layout/Sidebar";
 import { MobileNav } from "@/components/Layout/MobileNav";
 import { BottomNav } from "@/components/Layout/BottomNav";
 import { useAuth } from "@/hooks/useAuth";
+import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Badge, XCircle, Shield, Trash2, Users, MessageSquare, ArrowLeft, Megaphone, KeyRound } from "lucide-react";
 import { AnnouncementManager } from "@/components/Admin/AnnouncementManager";
 import { ResetPasswordDialog } from "@/components/Admin/ResetPasswordDialog";
 import { Input } from "@/components/ui/input";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
@@ -27,8 +21,6 @@ import {
 } from "@/components/ui/select";
 import verifiedNormal from "@/assets/verified-normal.png";
 import verifiedGold from "@/assets/verified-gold.png";
-
-const ADMIN_CODE = "ADMIN123456";
 
 interface Artist {
   id: string;
@@ -61,6 +53,7 @@ interface User {
 
 export default function Admin() {
   const { user, loading: authLoading } = useAuth();
+  const { isAdmin, loading: adminLoading } = useIsAdmin();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [artists, setArtists] = useState<Artist[]>([]);
@@ -71,10 +64,6 @@ export default function Admin() {
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState<"artists" | "tracks" | "users" | "logs" | "feedbacks" | "announcements">("artists");
   const [loading, setLoading] = useState(true);
-  const [codeDialogOpen, setCodeDialogOpen] = useState(true);
-  const [code, setCode] = useState("");
-  const [isVerifying, setIsVerifying] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [resetPasswordOpen, setResetPasswordOpen] = useState(false);
   const [selectedUserEmail, setSelectedUserEmail] = useState("");
 
@@ -84,32 +73,24 @@ export default function Admin() {
       return;
     }
     
-    if (isAuthenticated) {
+    if (!adminLoading && !isAdmin) {
+      toast({
+        variant: "destructive",
+        title: "Accès refusé",
+        description: "Vous n'avez pas les permissions administrateur",
+      });
+      navigate("/");
+      return;
+    }
+    
+    if (user && isAdmin) {
       loadArtists();
       loadTracks();
       loadUsers();
       loadLogs();
       loadFeedbacks();
     }
-  }, [user, authLoading, isAuthenticated]);
-
-  const handleVerifyCode = () => {
-    if (code !== ADMIN_CODE) {
-      toast({
-        variant: "destructive",
-        title: "Code incorrect",
-        description: "Le code admin que vous avez entré est incorrect",
-      });
-      return;
-    }
-
-    setIsAuthenticated(true);
-    setCodeDialogOpen(false);
-    toast({
-      title: "Accès autorisé ✓",
-      description: "Bienvenue dans le panneau administrateur",
-    });
-  };
+  }, [user, authLoading, isAdmin, adminLoading, navigate]);
 
   const loadArtists = async () => {
     try {
@@ -347,8 +328,12 @@ export default function Admin() {
     }
   };
 
-  if (authLoading) {
+  if (authLoading || adminLoading) {
     return <div className="min-h-screen bg-background flex items-center justify-center">Chargement...</div>;
+  }
+
+  if (!isAdmin) {
+    return <div className="min-h-screen bg-background flex items-center justify-center">Accès refusé</div>;
   }
 
   return (
@@ -356,59 +341,6 @@ export default function Admin() {
       <MobileNav />
       <Sidebar />
       <BottomNav />
-
-      {/* Admin Code Dialog */}
-      <Dialog open={codeDialogOpen} onOpenChange={(open) => {
-        if (!open && !isAuthenticated) {
-          navigate("/");
-        }
-        setCodeDialogOpen(open);
-      }}>
-        <DialogContent className="bg-glass/95 backdrop-blur-glass border-glass-border">
-          <DialogHeader>
-            <DialogTitle className="text-2xl font-bold flex items-center gap-2">
-              <Shield className="w-6 h-6 text-primary" />
-              Code Administrateur
-            </DialogTitle>
-            <DialogDescription>
-              Entrez le code administrateur pour accéder au panneau admin
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-4 pt-4">
-            <div>
-              <Input
-                type="password"
-                value={code}
-                onChange={(e) => setCode(e.target.value.toUpperCase())}
-                placeholder="Entrez le code admin"
-                className="bg-glass/30 border-glass-border text-center text-lg font-mono tracking-wider"
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    handleVerifyCode();
-                  }
-                }}
-              />
-            </div>
-
-            <Button
-              onClick={handleVerifyCode}
-              disabled={isVerifying || !code}
-              className="w-full bg-gradient-primary hover:shadow-glow transition-all duration-300"
-            >
-              {isVerifying ? "Vérification..." : "Vérifier"}
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {!isAuthenticated && (
-        <div className="min-h-screen flex items-center justify-center">
-          <p className="text-muted-foreground">Chargement...</p>
-        </div>
-      )}
-
-      {isAuthenticated && (
 
       <main className="md:ml-64 p-4 md:p-8 pb-40 md:pb-8 pt-20 md:pt-8">
         <Button
@@ -808,8 +740,8 @@ export default function Admin() {
           )}
         </div>
       </main>
-      )}
-      
+
+      {/* Reset Password Dialog */}
       <ResetPasswordDialog
         open={resetPasswordOpen}
         onOpenChange={setResetPasswordOpen}

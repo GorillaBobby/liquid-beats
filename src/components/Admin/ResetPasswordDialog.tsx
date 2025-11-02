@@ -25,13 +25,12 @@ export const ResetPasswordDialog = ({ open, onOpenChange, initialEmail = "" }: R
   const [loading, setLoading] = useState(false);
 
   const handleResetPassword = async () => {
-    if (!email || !email.includes("@")) {
-      toast.error("Veuillez entrer une adresse email valide");
-      return;
-    }
-
-    if (!newPassword || newPassword.length < 6) {
-      toast.error("Le mot de passe doit contenir au moins 6 caractères");
+    // Validate password reset data
+    const { passwordResetSchema } = await import("@/lib/validations");
+    const validation = passwordResetSchema.safeParse({ email, newPassword });
+    
+    if (!validation.success) {
+      toast.error(validation.error.errors[0].message);
       return;
     }
 
