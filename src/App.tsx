@@ -23,6 +23,7 @@ import AlbumDetail from "./pages/AlbumDetail";
 import TrackDetail from "./pages/TrackDetail";
 import Search from "./pages/Search";
 import NotFound from "./pages/NotFound";
+import { AnnouncementPopup } from "./components/Admin/AnnouncementPopup";
 
 const queryClient = new QueryClient();
 
@@ -56,6 +57,7 @@ const App = () => (
           </Routes>
           <GlobalAudioPlayer />
           <NotificationsPanel />
+          <AnnouncementPopup />
         </BrowserRouter>
       </AudioPlayerProvider>
     </TooltipProvider>

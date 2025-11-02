@@ -7,7 +7,8 @@ import { BottomNav } from "@/components/Layout/BottomNav";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import { Badge, XCircle, Shield, Trash2, Users, MessageSquare, ArrowLeft } from "lucide-react";
+import { Badge, XCircle, Shield, Trash2, Users, MessageSquare, ArrowLeft, Megaphone } from "lucide-react";
+import { AnnouncementManager } from "@/components/Admin/AnnouncementManager";
 import { Input } from "@/components/ui/input";
 import {
   Dialog,
@@ -67,7 +68,7 @@ export default function Admin() {
   const [allUsers, setAllUsers] = useState<User[]>([]);
   const [allFeedbacks, setAllFeedbacks] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [activeTab, setActiveTab] = useState<"artists" | "tracks" | "users" | "logs" | "feedbacks">("artists");
+  const [activeTab, setActiveTab] = useState<"artists" | "tracks" | "users" | "logs" | "feedbacks" | "announcements">("artists");
   const [loading, setLoading] = useState(true);
   const [codeDialogOpen, setCodeDialogOpen] = useState(true);
   const [code, setCode] = useState("");
@@ -463,9 +464,17 @@ export default function Admin() {
               <MessageSquare className="w-4 h-4 mr-2" />
               Feedbacks
             </Button>
+            <Button
+              variant={activeTab === "announcements" ? "default" : "outline"}
+              onClick={() => setActiveTab("announcements")}
+              className={activeTab === "announcements" ? "bg-gradient-primary" : "bg-glass/30 border-glass-border"}
+            >
+              <Megaphone className="w-4 h-4 mr-2" />
+              Annonces
+            </Button>
           </div>
 
-          {activeTab !== "logs" && activeTab !== "feedbacks" && (
+          {activeTab !== "logs" && activeTab !== "feedbacks" && activeTab !== "announcements" && (
             <div className="mb-6">
               <Input
                 placeholder={
@@ -711,6 +720,8 @@ export default function Admin() {
                 </div>
               )}
             </div>
+          ) : activeTab === "announcements" ? (
+            <AnnouncementManager />
           ) : (
             <div className="space-y-4">
               <div className="bg-glass/50 backdrop-blur-glass rounded-2xl p-6 border border-glass-border">
