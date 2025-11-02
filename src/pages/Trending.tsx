@@ -14,6 +14,7 @@ interface Track {
   id: string;
   title: string;
   artist: string;
+  originalArtist?: string;
   cover: string;
   audioUrl: string;
   plays_count: number;
@@ -81,10 +82,11 @@ export default function Trending() {
         .limit(100); // Load up to 100 tracks total
 
       if (tracksData) {
-        const formattedTracks = tracksData.map((t) => ({
+        const formattedTracks = tracksData.map((t: any) => ({
           id: t.id,
           title: t.title,
           artist: t.profiles.display_name || t.profiles.username,
+          originalArtist: t.original_artist_name,
           cover: t.cover_url || "https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?w=400&h=400&fit=crop",
           audioUrl: t.audio_url,
           plays_count: t.plays_count,

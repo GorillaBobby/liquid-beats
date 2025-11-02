@@ -14,6 +14,7 @@ interface Track {
   id: string;
   title: string;
   artist: string;
+  originalArtist?: string;
   cover: string;
   audioUrl: string;
   lyrics?: string;
@@ -53,6 +54,7 @@ export default function TrackDetail() {
           id: trackData.id,
           title: trackData.title,
           artist: trackData.profiles.display_name || trackData.profiles.username,
+          originalArtist: (trackData as any).original_artist_name,
           cover: trackData.cover_url || "https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?w=400&h=400&fit=crop",
           audioUrl: trackData.audio_url,
           lyrics: trackData.lyrics,
@@ -173,8 +175,11 @@ export default function TrackDetail() {
               <h1 className="text-3xl md:text-5xl font-bold text-foreground mb-3">
                 {track.title}
               </h1>
-              <p className="text-xl md:text-2xl text-muted-foreground mb-6">
-                {track.artist}
+              <p className="text-xl md:text-2xl text-foreground mb-2">
+                {track.originalArtist || track.artist}
+              </p>
+              <p className="text-sm text-muted-foreground mb-6">
+                Posté par {track.artist}
               </p>
 
               {track.description && (
