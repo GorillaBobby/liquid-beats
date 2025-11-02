@@ -158,12 +158,14 @@ export default function TrackDetail() {
         <div className="bg-glass/50 backdrop-blur-glass rounded-3xl p-6 md:p-8 border border-glass-border shadow-glass">
           <div className="flex flex-col md:flex-row gap-6 md:gap-8">
             {/* Cover Image */}
-            <div className="w-full md:w-80 aspect-square rounded-2xl overflow-hidden shadow-glass">
-              <img
-                src={track.cover}
-                alt={track.title}
-                className="w-full h-full object-cover"
-              />
+            <div className="w-full md:w-auto md:max-w-sm flex-shrink-0">
+              <div className="aspect-square rounded-2xl overflow-hidden shadow-glass">
+                <img
+                  src={track.cover}
+                  alt={track.title}
+                  className="w-full h-full object-cover"
+                />
+              </div>
             </div>
 
             {/* Track Info */}
