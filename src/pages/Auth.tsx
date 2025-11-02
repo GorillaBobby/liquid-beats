@@ -114,20 +114,42 @@ export default function Auth() {
         if (signUpError) throw signUpError;
         if (!authData.user) throw new Error("Erreur lors de la création du compte");
 
-        // Wait a bit for auth to be fully set up
-        await new Promise(resolve => setTimeout(resolve, 500));
+        // Wait for auth session to be fully established
+        let retries = 0;
+        const maxRetries = 5;
+        let profileCreated = false;
 
-        // Create profile
-        const { error: profileError } = await supabase.from("profiles").insert({
-          id: authData.user.id,
-          username: username.trim(),
-          display_name: displayName?.trim() || username.trim(),
-          user_type: userType,
-        });
+        while (retries < maxRetries && !profileCreated) {
+          await new Promise(resolve => setTimeout(resolve, 1000));
 
-        if (profileError) {
-          console.error("Profile creation error:", profileError);
-          throw new Error("Erreur lors de la création du profil");
+          // Check if session is ready
+          const { data: { session } } = await supabase.auth.getSession();
+          
+          if (session?.user) {
+            // Try to create profile
+            const { error: profileError } = await supabase.from("profiles").insert({
+              id: authData.user.id,
+              username: username.trim(),
+              display_name: displayName?.trim() || username.trim(),
+              user_type: userType,
+            });
+
+            if (!profileError) {
+              profileCreated = true;
+            } else if (profileError.code === '23505') {
+              // Duplicate key - profile already exists
+              profileCreated = true;
+            } else {
+              console.error("Profile creation attempt", retries + 1, ":", profileError);
+              retries++;
+            }
+          } else {
+            retries++;
+          }
+        }
+
+        if (!profileCreated) {
+          throw new Error("Impossible de créer le profil. Veuillez réessayer.");
         }
 
         toast({
