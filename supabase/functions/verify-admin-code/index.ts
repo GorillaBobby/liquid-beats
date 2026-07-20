@@ -44,43 +44,40 @@ Deno.serve(async (req) => {
         );
       }
 
-      const supabaseClient = createClient(
+      const authClient = createClient(
         Deno.env.get('SUPABASE_URL') ?? '',
-        Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-        { global: { headers: { Authorization: authHeader } } }
+        Deno.env.get('SUPABASE_ANON_KEY') ?? ''
       );
 
-      // Get the current user
-      const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
-      
-      if (userError || !user) {
+      const token = authHeader.replace('Bearer ', '');
+      const { data: claimsData, error: claimsError } = await authClient.auth.getClaims(token);
+
+      if (claimsError || !claimsData?.claims?.sub) {
+        console.error('getClaims failed:', claimsError);
         return new Response(
           JSON.stringify({ error: 'Invalid user session' }),
           { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
-      // Check if user already has admin role
-      const { data: existingRole } = await supabaseClient
+      const userId = claimsData.claims.sub;
+
+      // Use service role to bypass RLS for role assignment
+      const adminClient = createClient(
+        Deno.env.get('SUPABASE_URL') ?? '',
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      );
+
+      const { error: insertError } = await adminClient
         .from('user_roles')
-        .select('role')
-        .eq('user_id', user.id)
-        .eq('role', 'admin')
-        .maybeSingle();
+        .insert({ user_id: userId, role: 'admin' });
 
-      if (!existingRole) {
-        // Create admin role for this user
-        const { error: insertError } = await supabaseClient
-          .from('user_roles')
-          .insert({ user_id: user.id, role: 'admin' });
-
-        if (insertError && insertError.code !== '23505') { // 23505 is duplicate key error
-          console.error('Error creating admin role:', insertError);
-          return new Response(
-            JSON.stringify({ error: 'Failed to assign admin role' }),
-            { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-          );
-        }
+      if (insertError && insertError.code !== '23505') {
+        console.error('Error creating admin role:', insertError);
+        return new Response(
+          JSON.stringify({ error: 'Failed to assign admin role' }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
       }
 
       return new Response(
