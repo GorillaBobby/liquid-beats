@@ -200,20 +200,30 @@ const Index = () => {
       <BottomNav />
       
       <main className="md:ml-64 pb-40 md:pb-32 p-4 md:p-8 pt-20 md:pt-8">
-        {/* Hero Section */}
-        <section className="relative h-48 md:h-96 rounded-2xl md:rounded-3xl overflow-hidden mb-8 md:mb-12 shadow-glass">
-          <img
-            src="https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?w=1200&h=400&fit=crop"
-            alt="Hero"
-            className="w-full h-full object-cover"
+        {/* Hero Section — Midnight Indigo aurora */}
+        <section className="relative h-56 md:h-[26rem] rounded-2xl md:rounded-3xl overflow-hidden mb-8 md:mb-12 shadow-elegant bg-gradient-hero animate-gradient-shift bg-[length:200%_200%]">
+          {/* Floating glow orbs */}
+          <div className="absolute -top-20 -left-20 w-72 h-72 rounded-full bg-primary/30 blur-3xl animate-float" />
+          <div className="absolute -bottom-24 -right-16 w-80 h-80 rounded-full bg-accent/25 blur-3xl animate-float" style={{ animationDelay: '2s' }} />
+          {/* Subtle grid overlay */}
+          <div
+            className="absolute inset-0 opacity-[0.08]"
+            style={{
+              backgroundImage: 'linear-gradient(hsl(var(--foreground)) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--foreground)) 1px, transparent 1px)',
+              backgroundSize: '48px 48px',
+            }}
           />
           <div className="absolute inset-0 bg-gradient-overlay" />
-          <div className="absolute bottom-4 left-4 right-4 md:bottom-8 md:left-8 md:right-8">
-            <h2 className="text-2xl md:text-5xl font-bold text-foreground mb-2 md:mb-4 animate-fade-in">
-              Découvrez votre musique
+          <div className="relative h-full flex flex-col justify-end p-6 md:p-10">
+            <span className="inline-flex items-center gap-2 text-xs md:text-sm font-medium text-primary-foreground/80 mb-3 animate-fade-in">
+              <span className="w-2 h-2 rounded-full bg-primary-glow animate-glow" />
+              Nouveau sur LiquidBeats
+            </span>
+            <h2 className="font-display text-3xl md:text-6xl font-bold mb-2 md:mb-4 animate-fade-in leading-[1.05]">
+              Découvrez votre <span className="text-gradient">musique</span>
             </h2>
-            <p className="text-sm md:text-xl text-muted-foreground animate-fade-in">
-              Les meilleurs titres sélectionnés pour vous
+            <p className="text-sm md:text-xl text-muted-foreground max-w-xl animate-fade-in">
+              Les meilleurs titres sélectionnés pour vous, dans une expérience immersive.
             </p>
           </div>
         </section>
