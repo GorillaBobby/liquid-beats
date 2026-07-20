@@ -1,9 +1,8 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
+import { createClient } from 'npm:@supabase/supabase-js@2';
+import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors';
+import { z } from 'npm:zod@3';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+const BodySchema = z.object({ code: z.string().min(1).max(128) });
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -11,16 +10,15 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { code } = await req.json();
-    
-    if (!code) {
+    const parsed = BodySchema.safeParse(await req.json());
+    if (!parsed.success) {
       return new Response(
         JSON.stringify({ error: 'Code is required' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Get the admin code from environment variable
+    const { code } = parsed.data;
     const adminCode = Deno.env.get('ADMIN_ACCESS_CODE');
     
     if (!adminCode) {
@@ -31,65 +29,59 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Validate the code
-    const isValid = code === adminCode;
-    
-    if (isValid) {
-      // Get the authorization header to identify the user
-      const authHeader = req.headers.get('Authorization');
-      if (!authHeader) {
-        return new Response(
-          JSON.stringify({ error: 'Authentication required' }),
-          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-
-      const authClient = createClient(
-        Deno.env.get('SUPABASE_URL') ?? '',
-        Deno.env.get('SUPABASE_ANON_KEY') ?? ''
-      );
-
-      const token = authHeader.replace('Bearer ', '');
-      const { data: claimsData, error: claimsError } = await authClient.auth.getClaims(token);
-
-      if (claimsError || !claimsData?.claims?.sub) {
-        console.error('getClaims failed:', claimsError);
-        return new Response(
-          JSON.stringify({ error: 'Invalid user session' }),
-          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-
-      const userId = claimsData.claims.sub;
-
-      // Use service role to bypass RLS for role assignment
-      const adminClient = createClient(
-        Deno.env.get('SUPABASE_URL') ?? '',
-        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-      );
-
-      const { error: insertError } = await adminClient
-        .from('user_roles')
-        .insert({ user_id: userId, role: 'admin' });
-
-      if (insertError && insertError.code !== '23505') {
-        console.error('Error creating admin role:', insertError);
-        return new Response(
-          JSON.stringify({ error: 'Failed to assign admin role' }),
-          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-
-      return new Response(
-        JSON.stringify({ valid: true, message: 'Access granted' }),
-        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    } else {
+    if (code !== adminCode) {
       return new Response(
         JSON.stringify({ valid: false, message: 'Invalid code' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const authHeader = req.headers.get('Authorization');
+    const token = authHeader?.match(/^Bearer\s+(.+)$/i)?.[1];
+    if (!token) {
+      return new Response(
+        JSON.stringify({ error: 'Authentication required' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+
+    const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
+    const publishableKey = Deno.env.get('SUPABASE_PUBLISHABLE_KEY') ?? Deno.env.get('SUPABASE_ANON_KEY') ?? '';
+    const userResponse = await fetch(`${supabaseUrl}/auth/v1/user`, {
+      headers: { apikey: publishableKey, Authorization: `Bearer ${token}` },
+    });
+    const user = userResponse.ok ? await userResponse.json() : null;
+
+    if (!user?.id) {
+      console.error('User session validation failed with status:', userResponse.status);
+      return new Response(
+        JSON.stringify({ error: 'Invalid user session' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const adminClient = createClient(
+      supabaseUrl,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+      { auth: { persistSession: false, autoRefreshToken: false } },
+    );
+
+    const { error: insertError } = await adminClient
+      .from('user_roles')
+      .upsert({ user_id: user.id, role: 'admin' }, { onConflict: 'user_id,role' });
+
+    if (insertError) {
+      console.error('Error creating admin role:', insertError);
+      return new Response(
+        JSON.stringify({ error: 'Failed to assign admin role' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    return new Response(
+      JSON.stringify({ valid: true, message: 'Access granted' }),
+      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
   } catch (error) {
     console.error('Error in verify-admin-code:', error);
     return new Response(

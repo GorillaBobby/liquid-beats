@@ -102,7 +102,7 @@ export default function Admin() {
     setVerifying(true);
 
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      let { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
         setCodeError("Vous devez être connecté pour accéder à l'admin");
@@ -110,8 +110,18 @@ export default function Admin() {
         return;
       }
 
+      if (session.expires_at && session.expires_at * 1000 <= Date.now() + 30_000) {
+        const { data, error: refreshError } = await supabase.auth.refreshSession();
+        if (refreshError || !data.session) {
+          setCodeError("Votre session a expiré. Veuillez vous reconnecter.");
+          return;
+        }
+        session = data.session;
+      }
+
       const { data, error } = await supabase.functions.invoke('verify-admin-code', {
-        body: { code: adminCode }
+        body: { code: adminCode.trim() },
+        headers: { Authorization: `Bearer ${session.access_token}` },
       });
 
       if (error) throw error;
